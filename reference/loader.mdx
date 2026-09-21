@@ -1,0 +1,87 @@
+---
+title: "mcli loader — Install a Standalone Modloader"
+sidebarTitle: "loader"
+description: "Install Fabric, Quilt, Forge, or NeoForge for a specific Minecraft version and optional loader version without immediately launching the game."
+---
+
+The `mcli loader` command installs a modloader for a specific Minecraft version without immediately launching the game. This is useful for pre-staging a loader environment before adding mods, or for pinning a particular loader version to an instance. MCLI fetches loader metadata or installer JARs from each loader's official distribution endpoint and stores the result under `~/.mcli/loaders/`.
+
+## Synopsis
+
+```text
+mcli loader <loader> <minecraft> [--loader-version <version>]
+```
+
+## Arguments
+
+| Argument | Required | Description |
+|---|---|---|
+| `loader` | Yes | Modloader to install. One of: `fabric`, `quilt`, `forge`, `neoforge` |
+| `minecraft` | Yes | Minecraft version ID to target (e.g. `1.21.1`) |
+
+## Flags
+
+| Flag | Required | Description |
+|---|---|---|
+| `--loader-version` | No | Pin a specific loader version. Defaults to the latest available version for the given Minecraft version |
+
+---
+
+## Per-loader behaviour
+
+### Fabric
+
+Fetches the list of available loader versions from `meta.fabricmc.net` for the given Minecraft version, selects the latest (or the pinned version if `--loader-version` is supplied), then downloads the Fabric profile JSON and writes it to:
+
+```text
+~/.mcli/loaders/fabric/<minecraft>/version.json
+```
+
+### Quilt
+
+Behaves identically to the Fabric path, but uses `meta.quiltmc.org` (v3 API) as its metadata source. The profile JSON is written to:
+
+```text
+~/.mcli/loaders/quilt/<minecraft>/version.json
+```
+
+### Forge
+
+Looks up available Forge versions from Maven (`maven.minecraftforge.net`) and filters them by the given Minecraft version prefix. Downloads the matching `forge-<version>-installer.jar`, then runs it with `--installClient` to install the Forge client into:
+
+```text
+~/.mcli/loaders/forge/<minecraft>/<version>/client/
+```
+
+### NeoForge
+
+Looks up available NeoForge versions from Maven (`maven.neoforged.net`) and filters them by the NeoForge versioning scheme (e.g. `21.1.x` for Minecraft `1.21.1`). Downloads the installer JAR and runs it with `--installClient` into:
+
+```text
+~/.mcli/loaders/neoforge/<minecraft>/<version>/client/
+```
+
+---
+
+## Examples
+
+```bash
+# Install the latest Fabric loader for Minecraft 1.21.1
+mcli loader fabric 1.21.1
+
+# Install the latest Quilt loader for Minecraft 1.21.1
+mcli loader quilt 1.21.1
+
+# Install the latest Forge loader for Minecraft 1.20.1
+mcli loader forge 1.20.1
+
+# Install the latest NeoForge loader for Minecraft 1.21.1
+mcli loader neoforge 1.21.1
+
+# Pin a specific Fabric loader version
+mcli loader fabric 1.21.1 --loader-version 0.16.0
+```
+
+<Note>
+  You do not need to run `mcli loader` manually before launching a modded game. Passing `--fabric`, `--quilt`, `--forge`, or `--neoforge` to an era command (e.g. `mcli release 1.21.1 --fabric`) installs the loader automatically and then launches Minecraft in one step.
+</Note>

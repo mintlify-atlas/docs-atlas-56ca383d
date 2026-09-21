@@ -1,0 +1,97 @@
+---
+title: "mcli account — Manage Microsoft Account Sessions"
+sidebarTitle: "account"
+description: "List, switch, refresh, and remove saved Microsoft account sessions with the account subcommands: list, show, use, refresh, remove, and logout."
+---
+
+`mcli account` groups all post-login account management operations. After authenticating with `mcli login`, use these subcommands to inspect which accounts are saved, switch the active session, refresh tokens before they expire, or clean up accounts you no longer need. All account data is persisted in `~/.mcli/accounts.json`; the active account is used automatically whenever you launch Minecraft.
+
+## Synopsis
+
+```text
+mcli account <subcommand> [args]
+```
+
+## Subcommands
+
+### `mcli account list`
+
+Lists every saved Microsoft account. The active account is prefixed with `*`; all others are prefixed with a space. Each row shows the alias, the Minecraft username, and the player UUID.
+
+```text
+* main               Steve               xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  alt                Alex                yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy
+```
+
+---
+
+### `mcli account show`
+
+Prints the name and UUID of the currently active account. If no active account is set, prints `No active Microsoft account.`
+
+```text
+Steve  xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+```
+
+---
+
+### `mcli account use <alias>`
+
+Switches the active account to the one identified by `<alias>`. You can provide the alias used at login, or the exact Minecraft username or UUID. MCLI confirms the switch by printing the account's username.
+
+```text
+Active account: Steve
+```
+
+---
+
+### `mcli account refresh [--alias <name>]`
+
+Refreshes the Microsoft and Minecraft tokens for the specified account, or for the active account when `--alias` is omitted. MCLI performs the full token chain (Microsoft refresh → Xbox Live → XSTS → Minecraft Services) and updates the stored credentials in place.
+
+| Flag | Type | Default | Description |
+|------|------|---------|-------------|
+| `--alias` | string | active account | The alias of the account whose tokens should be refreshed. |
+
+---
+
+### `mcli account remove <alias>`
+
+Removes the account identified by `<alias>` from the accounts store. If the removed account was the active one, the active slot is automatically advanced to the next saved account (or cleared if none remain).
+
+---
+
+### `mcli account logout`
+
+Removes the currently active account from the accounts store. Equivalent to `mcli account remove <active-alias>`. If other accounts are saved, the next one becomes active.
+
+---
+
+## Examples
+
+```bash
+# List all saved accounts
+mcli account list
+
+# Show the active account
+mcli account show
+
+# Switch to the account saved as "main"
+mcli account use main
+
+# Refresh tokens for the active account
+mcli account refresh
+
+# Refresh tokens for a specific account
+mcli account refresh --alias alt
+
+# Remove the "alt" account
+mcli account remove alt
+
+# Remove the active account
+mcli account logout
+```
+
+<Warning>
+  Tokens are stored in `~/.mcli/accounts.json`. This file contains Microsoft OAuth refresh tokens that can be used to obtain new Minecraft access tokens. Treat it as sensitive — do not share it or commit it to version control.
+</Warning>

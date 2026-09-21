@@ -1,0 +1,102 @@
+---
+title: "Create and Run Minecraft Servers with MCLI"
+sidebarTitle: "Servers"
+description: "Create, configure, and manage vanilla Mojang and Paper Minecraft servers locally — including EULA acceptance, start/stop, and server properties."
+---
+
+MCLI can create, configure, and manage Minecraft servers locally — both vanilla Mojang servers and Paper servers. Server files live under `~/.mcli/servers/<name>/` and a persistent registry tracks running PIDs, memory settings, and server kind so every server is addressable by name across all `mcli server` commands.
+
+## Creating a server
+
+Provide a name and a Minecraft version. Use `--kind paper` to create a Paper server and `--memory` to set the heap size (defaults to `2G`).
+
+```bash
+mcli server create smp 1.21.1
+mcli server create paper-smp 1.21.1 --kind paper --memory 4G
+```
+
+| Argument / Flag | Description |
+|---|---|
+| `name` | Unique server name (letters, numbers, `.`, `_`, `-`) |
+| `version` | Minecraft version string (e.g. `1.21.1`) |
+| `--kind` | `vanilla` (default) or `paper` |
+| `--memory` | JVM heap size, e.g. `2G`, `512M` (default `2G`) |
+
+<Info>
+  Paper server JARs are downloaded from `api.papermc.io`. MCLI automatically
+  fetches the latest available build for the requested Minecraft version.
+</Info>
+
+## Accepting the EULA
+
+<Warning>
+  MCLI does **not** accept Mojang's EULA on your behalf. Before a server can
+  start, you must read the Mojang End User License Agreement and then
+  explicitly accept it with `mcli server eula <name>`.
+</Warning>
+
+After reading the EULA at [minecraft.net/en-us/eula](https://www.minecraft.net/en-us/eula), accept it for a server with:
+
+```bash
+mcli server eula smp
+```
+
+This writes `eula=true` to the server's `eula.txt`. Attempting `mcli server start` before accepting the EULA will exit with an error.
+
+## Starting and stopping
+
+```bash
+mcli server start smp
+mcli server start smp --foreground
+mcli server stop smp
+mcli server status smp
+```
+
+By default, `mcli server start` launches the server as a detached background process and records the PID. Pass `--foreground` to keep the server attached to your terminal session instead.
+
+`mcli server stop` sends `SIGTERM` to the server process group (or `taskkill` on Windows). `mcli server status` prints `RUNNING` or `STOPPED` alongside the PID when the process is alive.
+
+## Listing servers
+
+```bash
+mcli server list
+```
+
+Each line shows the current status, name, server kind, and Minecraft version:
+
+```text
+RUNNING  smp                vanilla  1.21.1
+STOPPED  paper-smp          paper    1.21.1
+```
+
+## Server properties
+
+Read and write individual entries in `server.properties` without opening the file manually:
+
+```bash
+mcli server get smp difficulty
+mcli server set smp difficulty hard
+```
+
+`mcli server get` prints the current value for the key. `mcli server set` updates the value in place and echoes `key=value` on success.
+
+## Deleting a server
+
+```bash
+mcli server delete smp
+mcli server delete smp --keep-files
+```
+
+By default, the server directory is removed along with its registry entry. Pass `--keep-files` to deregister the server from MCLI while leaving `~/.mcli/servers/<name>/` on disk. The server must be stopped before deletion.
+
+## Directory layout
+
+Every server created by MCLI has the following structure under `~/.mcli/servers/<name>/`:
+
+```text
+server.jar          — the downloaded server executable
+eula.txt            — Mojang EULA acceptance (eula=true/false)
+server.properties   — standard Minecraft server configuration
+mcli-server.json    — MCLI metadata (name, version, kind, memory, pid)
+server.log          — server stdout/stderr when running in background mode
+```

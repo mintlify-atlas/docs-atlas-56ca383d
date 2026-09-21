@@ -1,0 +1,101 @@
+---
+title: "Manage Java Runtimes with MCLI"
+sidebarTitle: "Java Runtimes"
+description: "MCLI automatically downloads and manages Java runtimes via Adoptium (Eclipse Temurin), selecting the right version from Minecraft's version metadata."
+---
+
+MCLI can automatically download and select the correct Java runtime for every Minecraft version it launches. Runtimes are sourced from the [Adoptium](https://adoptium.net) API (Eclipse Temurin) and stored under `~/.mcli/runtimes/`. When a version requires Java, MCLI checks for a managed runtime first, then falls back to your system Java if the major version matches, and will auto-install from Adoptium if neither is available.
+
+## Auto-Selection Logic
+
+When launching Minecraft, MCLI reads the `javaVersion.majorVersion` field from Mojang's version metadata and picks the matching managed runtime. Legacy versions — classic, indev, and infdev builds — do not carry Mojang metadata and fall back to **Java 8**, which offers the broadest compatibility for historical JARs.
+
+```text
+Mojang metadata present   →  use javaVersion.majorVersion
+Legacy / historical build →  fall back to Java 8
+```
+
+## Supported Major Versions
+
+MCLI's managed runtime system supports the following Java major versions:
+
+| Major Version | Typical Use |
+|---|---|
+| **8** | Historical and legacy builds (classic, indev, infdev, older alpha/beta) |
+| **17** | Minecraft 1.17 – 1.20 |
+| **21** | Minecraft 1.21+ |
+| **25** | Future / bleeding-edge releases |
+
+These correspond exactly to the choices accepted by the `mcli java install` command.
+
+## Commands
+
+<Steps>
+
+  ### List installed runtimes
+
+  ```bash
+  mcli java list
+  ```
+
+  Prints your system Java (if `java` is on `PATH`) alongside every managed runtime installed under `~/.mcli/runtimes/`. For each entry it shows whether it is `system` or `managed`, the directory name, and the full path to the `java` executable.
+
+  ### Install a runtime
+
+  ```bash
+  mcli java install 21
+  ```
+
+  Downloads the Eclipse Temurin JRE for the current OS and architecture from Adoptium. If the runtime is already installed, this is a no-op unless `--force` is passed.
+
+  ```bash
+  mcli java install 21 --force
+  ```
+
+  Use `--force` to re-download and replace an existing installation, for example after a Temurin patch release.
+
+  Valid major versions: `8`, `17`, `21`, `25`.
+
+  ### Print the executable path
+
+  ```bash
+  mcli java path 21
+  ```
+
+  Prints the full path to the `java` executable for a managed runtime. Exits with an error if that major version is not yet installed.
+
+</Steps>
+
+## Environment Variable Overrides
+
+You can bypass MCLI's automatic runtime selection by setting environment variables before running any `mcli` command:
+
+| Variable | Effect |
+|---|---|
+| `MCLI_JAVA` | Override the Java executable used for **modern** Minecraft versions |
+| `MCLI_LEGACY_JAVA` | Override the Java executable used for **legacy / historical** versions |
+
+```bash
+# Use a custom Java 21 build for modern versions
+MCLI_JAVA=/opt/graalvm-21/bin/java mcli release 1.21.4
+
+# Point legacy builds at an explicit Java 8 installation
+MCLI_LEGACY_JAVA=/usr/lib/jvm/java-8/bin/java mcli classic c0.30
+```
+
+MCLI checks for these overrides before consulting managed runtimes or the system PATH.
+
+## Platform Support
+
+The Adoptium API query is built automatically from your current platform:
+
+| Property | Detected values |
+|---|---|
+| **OS** | `windows`, `mac`, `linux` |
+| **Architecture** | `x64`, `aarch64`, `x86` |
+
+MCLI requests a JRE image first. If Adoptium does not publish a JRE for the selected platform and major version, it falls back to requesting a JDK automatically.
+
+<Tip>
+Run `mcli java list` before launching a version to confirm which Java executable MCLI will use. A `managed` entry for the expected major version means MCLI will use its own controlled runtime. A `system` entry means your PATH Java will be used only when its major version matches what the version metadata requires.
+</Tip>

@@ -1,0 +1,102 @@
+---
+title: "Launch Historical Minecraft Builds with MCLI"
+sidebarTitle: "Historical Versions"
+description: "MCLI supports the full Minecraft version history via Omniarchive, covering pre-classic through beta builds with a dedicated legacy launch path."
+---
+
+MCLI supports the complete arc of Minecraft's version history, from the earliest pre-classic prototypes through beta and into the modern release track. Versions too old to appear in Mojang's official manifest are sourced from the [Omniarchive](https://omniarchive.net) project — a community-maintained archive of preserved Java client builds. MCLI crawls Omniarchive's directory listing to discover available JARs and launches them through a dedicated legacy launch path.
+
+## What Is Omniarchive?
+
+Omniarchive is a community-run archive at [omniarchive.net](https://omniarchive.net/archive/java/client/) that preserves historical Minecraft Java client JAR files. It organises builds into era-based directories: `pre-classic`, `classic`, `indev`, `infdev`, `alpha`, `beta`, and others. MCLI's `OmniarchiveSource` crawls that directory tree to build a version catalog, extracting the JAR filename as the version ID and the directory path as the era.
+
+## Version Eras Supported
+
+MCLI recognises the following era identifiers for both direct launch commands and `mcli instance create`:
+
+| Era | Examples |
+|---|---|
+| `preclassic` | `rd-161348`, `rd-20090515` |
+| `classic` | `c0.0.11a`, `c0.30` |
+| `indev` | `Minecraft Indev` and dated variants |
+| `infdev` | `Minecraft Infdev` and dated variants |
+| `alpha` | `a1.0.4`, `a1.2.6` |
+| `beta` | `b1.2_01`, `b1.7.3` |
+
+Use the era as the top-level subcommand to launch directly:
+
+```bash
+# Pre-classic
+mcli preclassic rd-161348
+
+# Classic
+mcli classic c0.30
+
+# Indev
+mcli indev "Minecraft Indev"
+
+# Infdev
+mcli infdev "Minecraft Infdev"
+
+# Alpha
+mcli alpha a1.2.6
+
+# Beta
+mcli beta b1.7.3
+```
+
+## Using `--source omniarchive`
+
+By default, MCLI uses `--source auto`, which prefers Mojang's manifest and falls back to Omniarchive. To explicitly prefer Omniarchive for a version, pass `--source omniarchive`:
+
+```bash
+mcli classic c0.30 --source omniarchive
+mcli alpha a1.2.6 --source omniarchive
+```
+
+You can also browse only Omniarchive's catalog with the `versions` command:
+
+```bash
+mcli versions --source omniarchive
+```
+
+## Legacy Launch Path
+
+Omniarchive JARs bypass the standard Mojang launcher flow entirely. Rather than parsing a `version.json` manifest and assembling a classpath of libraries, MCLI uses a simplified legacy launcher (`mcli/legacy.py`) that:
+
+1. Inspects the JAR's `META-INF/MANIFEST.MF` for a `Main-Class` entry.
+2. Falls back to known historical entry points (`net.minecraft.client.Minecraft`, `com.mojang.minecraft.Minecraft`, `Minecraft`) if no manifest main class is found.
+3. Invokes Java directly with a minimal classpath and, where applicable, username and session token arguments.
+4. Sets the game directory to `~/.mcli/legacy/<version-id>/` (or the instance's `minecraft/` directory when launched through `mcli instance launch`).
+
+<Warning>
+Modloaders are supported on Mojang-backed versions, not raw Omniarchive jars. Passing `--fabric`, `--forge`, `--neoforge`, or `--quilt` with an Omniarchive-sourced version will produce an error.
+</Warning>
+
+## Browsing Historical Versions with `--historical`
+
+Mojang's version manifest includes its own historical types (`old_alpha`, `old_beta`). Pass `--historical` to include them alongside the current release and snapshot tracks:
+
+```bash
+mcli versions --historical
+mcli versions --historical --type beta
+```
+
+## Random Historical Launches
+
+MCLI's `random` command can be scoped to historical builds:
+
+```bash
+# Pick any historical version from Mojang's manifest
+mcli random --historical
+
+# Pick a random version from Omniarchive
+mcli random --source omniarchive
+
+# Dry run — print the chosen version without launching
+mcli random --source omniarchive --dry-run
+```
+
+<Info>
+Historical builds may require version-specific compatibility work. The very oldest JARs were not standardised and may behave differently depending on the Java runtime. MCLI uses **Java 8** for all legacy builds, as it provides the broadest compatibility with pre-1.6 Minecraft clients. Set `MCLI_LEGACY_JAVA` to point to an explicit Java 8 installation if your system default is newer.
+</Info>

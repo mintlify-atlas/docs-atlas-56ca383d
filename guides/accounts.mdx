@@ -1,0 +1,86 @@
+---
+title: "Authenticate with Microsoft Accounts in MCLI"
+sidebarTitle: "Accounts"
+description: "Use Microsoft OAuth device flow to authenticate Minecraft accounts in MCLI, with multi-account alias support and tokens stored in ~/.mcli/accounts.json."
+---
+
+MCLI authenticates players through the Microsoft OAuth 2.0 device flow — the same mechanism used by other community launchers. When you log in, MCLI completes the full Microsoft → Xbox Live → XSTS → Minecraft Services chain and persists the resulting refresh token in `~/.mcli/accounts.json`. No password is ever stored; only the Microsoft OAuth refresh token and a short-lived Minecraft access token are saved.
+
+## Logging In
+
+Run `mcli login` to start the device-code flow. MCLI prints a URL and a short code, then attempts to open the URL in your default browser automatically. Enter the code on the Microsoft sign-in page to complete authentication.
+
+```bash
+mcli login
+```
+
+You can optionally assign an **alias** at login time so that the account is easy to reference later:
+
+```bash
+mcli login --alias main
+mcli login --alias alt
+```
+
+When an alias is provided, it becomes the key used to look up the account in `accounts.json`. If no alias is given, MCLI uses the Minecraft profile name as the key.
+
+## Multi-Account Aliases
+
+MCLI stores every authenticated account in a single `accounts.json` file under `~/.mcli/`. One account is marked **active** at any time — this is the account used when launching Minecraft. The active marker is displayed as `*` in `mcli account list`.
+
+Switch the active account with `mcli account use`:
+
+```bash
+mcli account use main
+```
+
+MCLI looks up the alias first, then falls back to an exact Minecraft profile name or UUID if no alias matches.
+
+## Account Subcommands
+
+| Command | Description |
+|---|---|
+| `mcli account list` | List all saved accounts; the active account is prefixed with `*` |
+| `mcli account show` | Print the currently active account name and UUID |
+| `mcli account use <alias>` | Switch the active account to the named alias |
+| `mcli account refresh [--alias <alias>]` | Exchange the saved refresh token for a new access token |
+| `mcli account remove <alias>` | Remove a saved account by alias |
+| `mcli account logout` | Remove the currently active account |
+
+### Examples
+
+```bash
+# List all accounts (active marked with *)
+mcli account list
+
+# Show the currently active account
+mcli account show
+
+# Switch active account
+mcli account use main
+
+# Refresh tokens for the active account
+mcli account refresh
+
+# Refresh tokens for a specific alias
+mcli account refresh --alias alt
+
+# Remove a saved account
+mcli account remove alt
+
+# Log out (removes the active account)
+mcli account logout
+```
+
+<Note>
+When you remove or log out of the active account and other accounts remain saved, MCLI automatically promotes the next available account to active.
+</Note>
+
+## Security
+
+`~/.mcli/accounts.json` contains Microsoft OAuth **refresh tokens**. These tokens are long-lived credentials that allow MCLI to obtain fresh Minecraft access tokens without prompting you to re-authenticate.
+
+<Warning>
+Treat `accounts.json` as sensitive. Anyone with read access to this file can use it to authenticate as your Microsoft account. Ensure the file is not world-readable. On Linux and macOS, MCLI writes it under your home directory, which is typically private by default — verify with `ls -la ~/.mcli/`.
+</Warning>
+
+The file also contains your Minecraft access token, profile name, and UUID. Do not share this file or commit it to version control.

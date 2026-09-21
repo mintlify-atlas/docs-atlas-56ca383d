@@ -1,0 +1,75 @@
+---
+title: "mcli stats — Show Version Catalog Statistics"
+sidebarTitle: "stats"
+description: "Display total Minecraft version counts broken down by source (Mojang, Omniarchive) and by normalised era type across the full version catalog."
+---
+
+The `mcli stats` command queries the version catalog and prints a summary of how many versions are available, split by source and by era type. It is a fast way to understand the overall shape of the catalog — how many Mojang-tracked versions exist versus Omniarchive-archived builds, and how those versions are distributed across eras like release, beta, classic, and more.
+
+## Synopsis
+
+```bash
+mcli stats [--source <source>]
+```
+
+## Flags
+
+| Flag | Values | Default | Description |
+|---|---|---|---|
+| `--source` | `auto`, `mojang`, `omniarchive` | `auto` | Controls which sources are queried. `auto` merges both sources, giving Mojang precedence on duplicate IDs. Pass `mojang` or `omniarchive` to restrict the count to a single source. |
+
+## Output Format
+
+The command prints three sections to stdout: the grand total, a breakdown by source, and a breakdown by era type. Both breakdowns are printed in alphabetical order.
+
+```text
+Total: 847
+By source:
+  mojang         622
+  omniarchive    225
+By era:
+  alpha           73
+  beta            56
+  classic         38
+  infdev          12
+  indev            8
+  preclassic       5
+  release        494
+  snapshot       161
+```
+
+<Note>
+  The exact counts will vary over time as Mojang releases new versions and the Omniarchive catalog grows. The numbers above are illustrative.
+</Note>
+
+Era names in the breakdown are normalised: Mojang's internal `old_beta` and `old_alpha` types are folded into `beta` and `alpha` respectively, and Omniarchive's `pre-classic` label is normalised to `preclassic`.
+
+Any source errors encountered (for example, if Omniarchive is temporarily unreachable when `--source auto` is used) are printed to stderr after the stats output.
+
+## Examples
+
+Show statistics across all sources:
+
+```bash
+mcli stats
+```
+
+Show statistics for Mojang versions only:
+
+```bash
+mcli stats --source mojang
+```
+
+Show statistics for Omniarchive versions only:
+
+```bash
+mcli stats --source omniarchive
+```
+
+<Tip>
+  Run `mcli stats` before exploring a specific era to quickly confirm how many versions are available. Then drill down with `mcli versions --type <era>` or `mcli versions --source omniarchive --type classic`.
+</Tip>
+
+<Info>
+  When `--source auto` is used, duplicate version IDs that appear in both Mojang and Omniarchive are counted only once (the Mojang entry wins), so the `By source` totals may not add up to `Total` if there is overlap.
+</Info>

@@ -1,23 +1,11 @@
 {
-  "$schema": "https://mintlify.com/docs.json",
-  "name": "MCLI",
+  "projectType": "cli-tool",
+  "projectName": "MCLI",
+  "projectDescription": "A command-line Minecraft launcher that manages accounts, Java runtimes, instances, modloaders, mods, and servers from a single CLI.",
   "theme": "aspen",
-  "colors": {
-    "primary": "#2D7D46",
-    "light": "#4CAF50",
-    "dark": "#1B5E20"
-  },
-  "navbar": {
-    "primary": {
-      "type": "github",
-      "href": "https://github.com/Hampter588/MCLI"
-    }
-  },
-  "footer": {
-    "socials": {
-      "github": "https://github.com/Hampter588/MCLI"
-    }
-  },
+  "primaryColor": "#2D7D46",
+  "lightColor": "#4CAF50",
+  "darkColor": "#1B5E20",
   "navigation": {
     "tabs": [
       {
@@ -107,5 +95,40 @@
         ]
       }
     ]
-  }
+  },
+  "keyFeatures": [
+    "Launch any Minecraft version (release, snapshot, beta, alpha, infdev, indev, classic, pre-classic) from the command line",
+    "Microsoft account authentication with multi-account alias support",
+    "Automatic Java runtime management via Adoptium (Java 8, 17, 21, 25)",
+    "Isolated game instances with per-instance saves, mods, and settings",
+    "Fabric, Quilt, Forge, and NeoForge modloader installation",
+    "Modrinth mod and modpack search and installation with dependency resolution",
+    "Vanilla and Paper Minecraft server creation and lifecycle management",
+    "Historical version support via Omniarchive source",
+    "Standalone binaries for Windows, Linux, macOS on x64 and ARM64",
+    "Linux distribution packages: .deb, .rpm, Arch PKGBUILD, Nix flake"
+  ],
+  "publicApiSurface": [
+    "mcli release <version>",
+    "mcli snapshot <version>",
+    "mcli beta <version>",
+    "mcli alpha <version>",
+    "mcli infdev <version>",
+    "mcli indev <version>",
+    "mcli classic <version>",
+    "mcli preclassic <version>",
+    "mcli versions [--historical] [--source] [--type]",
+    "mcli search <query>",
+    "mcli info <version>",
+    "mcli stats",
+    "mcli login [--alias]",
+    "mcli account list|show|use|refresh|remove|logout",
+    "mcli java list|install|path",
+    "mcli instance create|list|info|launch|delete|clone|set",
+    "mcli mods search|install|remove|list",
+    "mcli modpack search|install",
+    "mcli loader <fabric|forge|neoforge|quilt> <minecraft>",
+    "mcli server create|list|start|stop|status|eula|delete|get|set",
+    "mcli random [--historical] [--source] [--type] [--dry-run]"
+  ]
 }

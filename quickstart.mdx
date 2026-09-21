@@ -1,47 +1,157 @@
 ---
-title: "Quickstart"
-description: "Begin with a guide on the fastest path to a successful outcome"
+title: "Get Started with MCLI in Five Minutes"
+sidebarTitle: "Quickstart"
+description: "Log in with your Microsoft account, let MCLI install Java automatically, and launch Minecraft 1.21.1 from the terminal in under five minutes."
 ---
 
-Describe how someone begins using your product. What is the first thing they need to do? Are there any prerequisites?
-
-A quickstart should take someone from zero to using your product. They'll get a quick win and a sense of what they can accomplish.
-
-## Prerequisites
-
-Before you begin, you must have:
-
-- Requirement one (for example, Node.js 18+, a free account, an API key)
-- Requirement two (for example, a compatible device, a compatible browser, a compatible operating system)
-
-## Get started
+This guide walks you through the most common MCLI workflow: authenticating with your Microsoft account, browsing available versions, and launching Minecraft. By the end you'll have a working game session and an optional named instance you can reuse. All MCLI data is stored under `~/.mcli/` so nothing touches your existing `.minecraft` folder.
 
 <Steps>
-  <Step title="Install">
-    Describe how to install your product or sign up.
+  <Step title="Install MCLI">
+    If you haven't installed MCLI yet, see the [Installation](/installation) page for prebuilt binaries, pip-from-source instructions, native Linux packages, and the Nix flake.
+
+    Once installed, confirm the CLI is on your `PATH`:
 
     ```bash
-    npm install your-package
+    mcli --help
     ```
   </Step>
-  <Step title="Configure">
-    Describe any setup or configuration needed before first use.
+
+  <Step title="Log in with Microsoft">
+    Run the login command. MCLI opens your default browser to complete the Microsoft OAuth flow, then saves the resulting token to `~/.mcli/accounts.json`.
 
     ```bash
-    your-cli init
+    mcli login
+    ```
+
+    You'll see output like:
+
+    ```
+    Logged in as Steve (xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)
+    ```
+
+    <Tip>
+      If you own multiple Microsoft accounts, use `--alias` to save them side-by-side and switch between them:
+
+      ```bash
+      mcli login --alias main
+      mcli login --alias alt
+      mcli account use main
+      ```
+    </Tip>
+  </Step>
+
+  <Step title="Verify your account">
+    Confirm the active account is set correctly before launching:
+
+    ```bash
+    mcli account show
+    ```
+
+    To see all saved accounts and which one is active (marked with `*`):
+
+    ```bash
+    mcli account list
     ```
   </Step>
-  <Step title="Run it">
-    Show the first thing a user does to see it working.
+
+  <Step title="Browse available versions">
+    List all current Mojang release and snapshot versions:
 
     ```bash
-    your-cli start
+    mcli versions
+    ```
+
+    Add `--historical` to include classic, infdev, indev, alpha, and beta builds sourced from both Mojang and Omniarchive:
+
+    ```bash
+    mcli versions --historical
+    ```
+
+    You can also filter by era or search by keyword:
+
+    ```bash
+    mcli versions --type release
+    mcli search "1.7"
+    ```
+
+    To get detailed metadata for a specific version:
+
+    ```bash
+    mcli info 1.21.1
+    ```
+  </Step>
+
+  <Step title="Launch a version">
+    Launch Minecraft 1.21.1 directly. MCLI automatically downloads the game files and selects or installs the correct Java runtime based on Mojang's version metadata — no manual Java setup needed:
+
+    ```bash
+    mcli release 1.21.1
+    ```
+
+    Historical era commands work the same way:
+
+    ```bash
+    mcli beta b1.7.3
+    mcli classic c0.30
+    ```
+
+    To launch with a modloader, add the appropriate flag:
+
+    ```bash
+    mcli release 1.21.1 --fabric
+    mcli release 1.21.1 --quilt
+    mcli release 1.20.1 --forge
+    mcli release 1.21.1 --neoforge
+    ```
+
+    Minecraft starts as a background process and MCLI prints the PID:
+
+    ```
+    Minecraft started (PID 12345)
+    ```
+  </Step>
+
+  <Step title="(Optional) Create and launch an instance">
+    Named instances isolate saves, settings, configs, mods, resource packs, and screenshots from each other. Create one for a specific version:
+
+    ```bash
+    mcli instance create survival release 1.21.1
+    ```
+
+    Then launch it by name any time:
+
+    ```bash
+    mcli instance launch survival
+    ```
+
+    List all your instances:
+
+    ```bash
+    mcli instance list
+    ```
+
+    Clone an instance to duplicate its configuration:
+
+    ```bash
+    mcli instance clone survival survival-copy
     ```
   </Step>
 </Steps>
 
-<Tip>
-  Give people a way to get help. This could be a link to a support page, a chat with a customer support agent, or a forum for your product.
+<Note>
+  All MCLI-managed data lives under `~/.mcli/`. This includes accounts, assets, cached version metadata, instances, Java runtimes, modloader files, servers, and downloaded game versions. Treat `~/.mcli/accounts.json` as sensitive — it contains Microsoft authentication refresh tokens.
 
-  Example: Need help? Reach out to us at [support@yourcompany.com](mailto:support@yourcompany.com).
-</Tip>
+  ```text
+  ~/.mcli/
+  ├── accounts.json
+  ├── assets/
+  ├── cache/
+  ├── instances/
+  ├── libraries/
+  ├── loaders/
+  ├── runtimes/
+  ├── servers/
+  └── versions/
+  ```
+</Note>

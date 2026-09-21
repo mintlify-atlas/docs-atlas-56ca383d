@@ -1,0 +1,95 @@
+---
+title: "mcli versions — List Available Minecraft Versions"
+sidebarTitle: "versions"
+description: "List all available Minecraft versions with optional filtering by source, era type, historical flag, substring query, and result limit."
+---
+
+The `mcli versions` command fetches the combined version catalog from Mojang and Omniarchive and prints a sorted table of every version MCLI can locate. You can narrow the results by source, era type, a free-text query on the version ID, or a hard limit on the number of rows shown. By default, only the normalised modern era types are displayed — pass `--historical` to restrict output to pre-release history only.
+
+## Synopsis
+
+```bash
+mcli versions [--source <source>] [--type <era>] [--historical] [--query <text>] [--limit <n>]
+```
+
+## Flags
+
+| Flag | Values | Default | Description |
+|---|---|---|---|
+| `--source` | `auto`, `mojang`, `omniarchive` | `auto` | Which version source(s) to query. `auto` merges both sources, giving Mojang precedence when a version ID appears in both. |
+| `--type` | `release`, `snapshot`, `beta`, `alpha`, `infdev`, `indev`, `classic`, `preclassic` | — | Restrict results to a single era type. Omit to show all eras. |
+| `--historical` | — | `false` | When set, **excludes** modern `release` and `snapshot` entries and shows only historical builds. |
+| `--query` | any string | — | Filters results to versions whose ID contains the given substring (case-insensitive). |
+| `--limit` | integer | — | Truncates the output to the first `n` rows after all other filters have been applied. |
+
+<Note>
+  `--historical` inverts the usual display: it filters **out** releases and snapshots, leaving only beta, alpha, infdev, indev, classic, and preclassic builds. It is not a way to include extra types — use `--type` for a specific era.
+</Note>
+
+## Output Format
+
+Results are printed as a fixed-width text table sorted by release date, newest first. A summary line follows the table, and any source errors are written to stderr.
+
+```text
+VERSION                      ERA          SOURCE       RELEASED
+------------------------------------------------------------------------------
+1.21.1                       release      mojang       2024-08-08T10:02:29+00:00
+1.21                         release      mojang       2024-06-13T11:03:29+00:00
+b1.7.3                       beta         omniarchive  -
+...
+
+847 version(s)
+```
+
+| Column | Width | Description |
+|---|---|---|
+| `VERSION` | 28 chars | The version ID string as returned by the source. |
+| `ERA` | 12 chars | Normalised era name (`old_beta` → `beta`, `old_alpha` → `alpha`). |
+| `SOURCE` | 12 chars | `mojang` or `omniarchive`. |
+| `RELEASED` | — | ISO 8601 release timestamp, or `-` when unavailable (common for Omniarchive entries). |
+
+<Tip>
+  Pipe the output to a pager like `less` when browsing the full catalog — there are hundreds of versions across both sources.
+</Tip>
+
+## Examples
+
+List every version from both sources:
+
+```bash
+mcli versions
+```
+
+Show only historical builds (beta, alpha, infdev, indev, classic, preclassic):
+
+```bash
+mcli versions --historical
+```
+
+List only versions sourced from Omniarchive:
+
+```bash
+mcli versions --source omniarchive
+```
+
+Filter to beta-era versions:
+
+```bash
+mcli versions --type beta
+```
+
+Find versions whose ID contains `1.7`:
+
+```bash
+mcli versions --query "1.7"
+```
+
+Show only the ten most recent versions:
+
+```bash
+mcli versions --limit 10
+```
+
+<Info>
+  When `--source auto` is used (the default), Mojang takes precedence: if the same version ID is present in both sources, the Mojang entry is shown and the Omniarchive entry is silently skipped.
+</Info>

@@ -1,0 +1,180 @@
+---
+title: "MCLI Data Directory and File Layout"
+sidebarTitle: "Data Directory"
+description: "A complete reference to the ~/.mcli/ directory: every subdirectory MCLI creates, what it stores, and how to manage sensitive files."
+---
+
+All data that MCLI manages — Microsoft account credentials, downloaded Java runtimes, installed Minecraft versions, asset objects, library JARs, instances, servers, modloader profiles, and metadata caches — lives under a single root directory at `~/.mcli/`. Nothing is written outside this tree during normal operation, which makes it straightforward to locate, back up, or remove any part of MCLI's state.
+
+## Directory Tree
+
+```text
+~/.mcli/
+├── accounts.json
+├── assets/
+├── cache/
+├── instances/
+│   └── <name>/
+│       ├── instance.json
+│       └── minecraft/
+├── libraries/
+├── loaders/
+├── runtimes/
+│   ├── java-8/
+│   ├── java-17/
+│   ├── java-21/
+│   └── java-25/
+├── servers/
+│   └── <name>/
+│       ├── server.jar
+│       ├── eula.txt
+│       ├── server.properties
+│       └── mcli-server.json
+└── versions/
+```
+
+## Path Reference
+
+<Accordion title="accounts.json — Microsoft OAuth tokens and profiles">
+Stores the active Microsoft account and all named account aliases added via `mcli login --alias <name>`. Each entry contains the Microsoft OAuth refresh token, the Minecraft access token, and the player profile (UUID and display name) returned by the Xbox Live / Minecraft auth flow.
+
+```json
+{
+  "active": "main",
+  "accounts": {
+    "main": {
+      "profile": {
+        "id": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "name": "Steve"
+      },
+      "minecraft_access_token": "...",
+      "refresh_token": "..."
+    }
+  }
+}
+```
+
+<Warning>
+`accounts.json` contains Microsoft OAuth **refresh tokens**. Anyone with access to this file can obtain a fresh Minecraft access token for your account without your password. Treat it like a password file: restrict its permissions (`chmod 600 ~/.mcli/accounts.json` on Linux/macOS) and do not share or commit it.
+</Warning>
+</Accordion>
+
+<Accordion title="assets/ — Minecraft asset objects">
+Holds the raw asset objects (sound files, language files, textures, and other game resources) downloaded from Mojang's asset CDN. Objects are organised by the first two hex characters of their SHA-1 hash, mirroring the layout Mojang uses internally:
+
+```text
+assets/
+└── objects/
+    ├── 00/
+    │   └── 00a1b2c3d4...
+    ├── 1a/
+    │   └── 1af3e9...
+    └── ...
+```
+
+Assets are shared across all versions and instances that reference the same asset index, so they are not duplicated when you install multiple versions of Minecraft.
+</Accordion>
+
+<Accordion title="cache/ — JSON metadata cache">
+Stores locally cached copies of remote JSON metadata fetched by MCLI. This directory is managed by `mcli/cache.py`. The two primary cache files are:
+
+| File | Contents | Max age |
+|---|---|---|
+| `mojang-manifest.json` | Full Mojang version manifest (`version_manifest_v2.json`) | 1 hour |
+| `mojang-version-<id>.json` | Per-version metadata JSON fetched from `version.url` | 30 days |
+
+Cache entries are validated by file modification time. An entry that is older than its max-age is silently re-fetched on the next relevant command. You can force a refresh by deleting the relevant file from `~/.mcli/cache/`.
+</Accordion>
+
+<Accordion title="instances/ — per-instance game directories">
+Each instance created with `mcli instance create` gets its own subdirectory under `instances/`. The subdirectory name matches the instance name. Inside each instance:
+
+```text
+instances/
+└── survival/
+    ├── instance.json      ← instance metadata (name, era, version, source)
+    ├── minecraft/         ← Minecraft game directory (saves, options, mods, etc.)
+    ├── mods/
+    ├── resourcepacks/
+    ├── shaderpacks/
+    └── screenshots/
+```
+
+`instance.json` records the instance name, target era, version ID, and source. The `minecraft/` subdirectory is passed to the launcher as the `--gameDir` argument, so each instance has completely isolated saves, options, resource packs, mod lists, and screenshots.
+</Accordion>
+
+<Accordion title="libraries/ — shared Minecraft library JARs">
+Contains all library JARs listed in Mojang version metadata, downloaded during `mcli install`. Libraries are stored using the same Maven-style directory structure Mojang specifies (`com/example/lib/1.0/lib-1.0.jar`), and are shared across every version and instance that depends on them — MCLI does not re-download a library that is already present.
+</Accordion>
+
+<Accordion title="loaders/ — modloader profile JARs and version JSON">
+Holds installed modloader artefacts for Fabric, Quilt, Forge, and NeoForge. Each loader is stored under a path that encodes the loader type, Minecraft version, and loader version, for example:
+
+```text
+loaders/
+└── fabric/
+    └── 1.21.1/
+        └── 0.16.5/
+            ├── fabric-loader-0.16.5-1.21.1.jar
+            └── fabric-loader-0.16.5-1.21.1.json
+```
+
+The version JSON follows the Minecraft launcher profile format and is merged with the base Minecraft version JSON at launch time.
+</Accordion>
+
+<Accordion title="runtimes/ — Adoptium JRE downloads">
+Contains managed Java runtimes downloaded from the [Adoptium API](https://api.adoptium.net/). MCLI installs and selects a runtime automatically based on the `javaVersion.majorVersion` field in Mojang's version metadata, or defaults to Java 8 for historical builds.
+
+```text
+runtimes/
+├── java-8/
+│   └── bin/
+│       └── java
+├── java-17/
+├── java-21/
+└── java-25/
+```
+
+Supported major versions are **8**, **17**, **21**, and **25**. You can install any of them explicitly with `mcli java install <major>`. Managed runtimes are platform-specific: MCLI downloads the correct OS and architecture variant automatically.
+
+<Tip>
+Set the `MCLI_JAVA` environment variable to the path of a `java` executable to override the runtime selected for modern Minecraft versions. For historical builds launched via the legacy path, set `MCLI_LEGACY_JAVA` instead. Both variables take precedence over managed and system runtimes.
+
+```bash
+# Use a custom JDK for modern versions
+export MCLI_JAVA=/usr/lib/jvm/temurin-21/bin/java
+
+# Use Java 8 from a custom location for legacy builds
+export MCLI_LEGACY_JAVA=/opt/jdk8/bin/java
+```
+</Tip>
+</Accordion>
+
+<Accordion title="servers/ — Minecraft server directories">
+Each server created with `mcli server create` gets a dedicated subdirectory:
+
+```text
+servers/
+└── smp/
+    ├── server.jar          ← downloaded vanilla or Paper server JAR
+    ├── eula.txt            ← set to eula=true only after mcli server eula <name>
+    ├── server.properties   ← standard Minecraft server configuration
+    └── mcli-server.json    ← MCLI metadata (name, version, kind, memory, pid)
+```
+
+`eula.txt` is written as `eula=false` at creation time. MCLI will not start a server until you have read Mojang's EULA and explicitly accepted it with `mcli server eula <name>`.
+</Accordion>
+
+<Accordion title="versions/ — client JARs and version JSON">
+Stores the downloaded Minecraft client JARs and their associated version JSON files. The directory is created alongside `cache/` by `mcli/cache.py` at startup:
+
+```text
+versions/
+├── 1.21.1.jar
+├── 1.21.1.json
+├── b1.7.3.jar
+└── b1.7.3.json
+```
+
+Both the JAR and the version JSON for a build are kept here so that reinstalling a version does not require re-downloading data that is already present.
+</Accordion>

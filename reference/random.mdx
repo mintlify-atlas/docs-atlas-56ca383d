@@ -1,0 +1,64 @@
+---
+title: "mcli random — Launch a Random Minecraft Version"
+sidebarTitle: "random"
+description: "Pick and immediately launch a random Minecraft version, with optional filters to constrain by era, source, or the full historical corpus."
+---
+
+`mcli random` selects a random Minecraft version from the available catalog and launches it immediately. Filters let you constrain the selection to a specific era, a particular source, or the wider historical corpus of preserved builds. When no filters are provided, any version known to MCLI — across all eras and sources — is eligible.
+
+## Synopsis
+
+```text
+mcli random [--source <source>] [--type <era>] [--historical] [--dry-run]
+```
+
+## Flags
+
+| Flag | Default | Description |
+|---|---|---|
+| `--source` | `auto` | Version source to draw from: `auto`, `mojang`, or `omniarchive` |
+| `--type` | — | Restrict selection to one era: `release`, `snapshot`, `beta`, `alpha`, `infdev`, `indev`, `classic`, or `preclassic` |
+| `--historical` | false | When set, only historical types are considered — `release` and `snapshot` are excluded from the pool |
+| `--dry-run` | false | Print which version would be launched without actually installing or starting the game |
+
+## Output
+
+After selection, MCLI always prints a summary line identifying the chosen version:
+
+```text
+Random pick: <version-id> [<era>] via <source>
+```
+
+If `--dry-run` is not set, MCLI proceeds to install the version, resolve Java, and spawn the game process. The process ID is printed once the game starts:
+
+```text
+Minecraft started (PID <pid>)
+```
+
+If any catalog source warnings are encountered (for example, a source being unavailable), they are printed to `stderr` after the main output.
+
+## Examples
+
+```bash
+# Launch a completely random version from any era
+mcli random
+
+# Random from the full historical corpus (excludes release and snapshot)
+mcli random --historical
+
+# Random Beta-era version only
+mcli random --type beta
+
+# Random version sourced from Omniarchive
+mcli random --source omniarchive
+
+# Print the selected version without launching
+mcli random --dry-run
+
+# Dry-run filtered to Classic era
+mcli random --type classic --dry-run
+```
+
+<Tip>
+Use `--dry-run` to explore and discover obscure historical version IDs without launching the game. Pair it with `--type` or `--historical` to browse specific corners of Minecraft's version history.
+</Tip>

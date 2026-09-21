@@ -1,0 +1,181 @@
+---
+title: "mcli server — Create and Manage Minecraft Servers"
+sidebarTitle: "server"
+description: "Create, start, stop, and configure Minecraft servers with MCLI — supports vanilla and Paper with full server.properties management."
+---
+
+The `mcli server` command group lets you create and manage Minecraft server instances from the command line. MCLI handles downloading the server JAR, persisting server metadata, starting and stopping the process, and reading or writing `server.properties` keys — all without leaving your terminal.
+
+## Synopsis
+
+```text
+mcli server <subcommand> [args]
+```
+
+## Server name rules
+
+Server names may contain **letters, numbers, dots, underscores, and dashes only**. Spaces and special characters are not permitted.
+
+---
+
+## Subcommands
+
+### `mcli server create`
+
+```text
+mcli server create <name> <version> [--kind vanilla|paper] [--memory <size>]
+```
+
+Creates a new Minecraft server with the given name and version. MCLI downloads the appropriate `server.jar` and writes initial `eula.txt` (set to `false`) and `server.properties` files into `~/.mcli/servers/<name>/`.
+
+| Argument / Flag | Required | Description |
+|---|---|---|
+| `name` | Yes | Unique server name (see name rules above) |
+| `version` | Yes | Minecraft version ID (e.g. `1.21.1`) |
+| `--kind` | No | Server software: `vanilla` (default) or `paper` |
+| `--memory` | No | JVM heap size passed as `-Xms` / `-Xmx` (default `2G`) |
+
+---
+
+### `mcli server list`
+
+```text
+mcli server list
+```
+
+Prints all registered servers with their current status, kind, and version. Each line shows `RUNNING` or `STOPPED`, the server name, kind, and Minecraft version.
+
+---
+
+### `mcli server start`
+
+```text
+mcli server start <name> [--foreground]
+```
+
+Starts the named server. By default the server process is detached and runs in the background with its output redirected to `~/.mcli/servers/<name>/server.log`. Pass `--foreground` to attach the terminal directly to the process instead.
+
+<Warning>
+  The server will refuse to start if `eula.txt` does not contain `eula=true`. Run `mcli server eula <name>` after reading and agreeing to Mojang's EULA.
+</Warning>
+
+| Argument / Flag | Required | Description |
+|---|---|---|
+| `name` | Yes | Name of the server to start |
+| `--foreground` | No | Attach the terminal to the server process instead of backgrounding it |
+
+---
+
+### `mcli server stop`
+
+```text
+mcli server stop <name>
+```
+
+Stops the named server. On Unix-like systems MCLI sends `SIGTERM` to the server's process group. On Windows it calls `taskkill /T /F`. Prints `Stopped.` on success, or `Server was not running.` if the process was already dead.
+
+---
+
+### `mcli server status`
+
+```text
+mcli server status <name>
+```
+
+Prints `RUNNING` followed by the PID, or `STOPPED`, for the named server.
+
+---
+
+### `mcli server eula`
+
+```text
+mcli server eula <name>
+```
+
+Writes `eula=true` to the server's `eula.txt` file, allowing the server to start. You must read and agree to [Mojang's EULA](https://www.minecraft.net/en-us/eula) before running this command.
+
+---
+
+### `mcli server delete`
+
+```text
+mcli server delete <name> [--keep-files]
+```
+
+Unregisters the server from MCLI's index. By default, the server's directory on disk is also removed. Pass `--keep-files` to unregister without deleting the files.
+
+| Argument / Flag | Required | Description |
+|---|---|---|
+| `name` | Yes | Name of the server to delete |
+| `--keep-files` | No | Remove the registry entry but leave the server files on disk |
+
+---
+
+### `mcli server get`
+
+```text
+mcli server get <name> <key>
+```
+
+Reads a single key from the server's `server.properties` file and prints its current value.
+
+| Argument | Required | Description |
+|---|---|---|
+| `name` | Yes | Server name |
+| `key` | Yes | Property key to read (e.g. `difficulty`, `max-players`) |
+
+---
+
+### `mcli server set`
+
+```text
+mcli server set <name> <key> <value>
+```
+
+Writes a key–value pair to the server's `server.properties` file. The file is rewritten in place; existing keys are updated and new keys are appended.
+
+| Argument | Required | Description |
+|---|---|---|
+| `name` | Yes | Server name |
+| `key` | Yes | Property key to write (e.g. `difficulty`) |
+| `value` | Yes | Value to assign (e.g. `hard`) |
+
+---
+
+## Examples
+
+```bash
+# Create a vanilla server
+mcli server create smp 1.21.1
+
+# Create a Paper server with 4 GB of memory
+mcli server create paper-smp 1.21.1 --kind paper --memory 4G
+
+# Accept the EULA (read it first!)
+mcli server eula smp
+
+# Start the server in the background
+mcli server start smp
+
+# Check whether the server is running
+mcli server status smp
+
+# Read a server.properties value
+mcli server get smp difficulty
+
+# Change a server.properties value
+mcli server set smp difficulty hard
+
+# Stop the server
+mcli server stop smp
+
+# List all servers and their status
+mcli server list
+
+# Delete a server and its files
+mcli server delete smp
+```
+
+<Warning>
+  MCLI never accepts the Mojang EULA on your behalf. Run `mcli server eula <name>` only after you have personally read and agreed to the [Minecraft End User License Agreement](https://www.minecraft.net/en-us/eula).
+</Warning>

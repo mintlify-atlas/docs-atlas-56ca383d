@@ -1,0 +1,114 @@
+---
+title: "mcli info — Show Minecraft Version Metadata"
+sidebarTitle: "info"
+description: "Retrieve and pretty-print full version metadata JSON for a specific Minecraft version ID, resolved from the Mojang manifest or Omniarchive catalog."
+---
+
+The `mcli info` command resolves a version ID against the configured source(s) and prints its full metadata as pretty-printed JSON. For Mojang versions this includes the parsed version manifest — Java requirement, downloadable artifacts, library list, asset index, and more. For Omniarchive versions it returns the raw crawled entry with the direct client JAR download URL.
+
+## Synopsis
+
+```bash
+mcli info <version> [--source <source>]
+```
+
+## Arguments
+
+| Argument | Required | Description |
+|---|---|---|
+| `version` | Yes | The exact version ID to look up (e.g. `1.21.1`, `b1.7.3`, `c0.30`). Version IDs are case-sensitive and must match exactly as shown in `mcli versions`. |
+
+## Flags
+
+| Flag | Values | Default | Description |
+|---|---|---|---|
+| `--source` | `auto`, `mojang`, `omniarchive` | `auto` | Which source to resolve the version from. With `auto`, MCLI checks both sources and returns the first match, preferring Mojang. |
+
+<Note>
+  The `version` argument is an **exact** ID — not a substring. Use `mcli search` or `mcli versions --query` first if you need to discover the correct ID.
+</Note>
+
+## Output Format
+
+The command prints a JSON object to stdout. The fields present depend on the source.
+
+**Mojang versions** return a structured summary derived from the Mojang version manifest:
+
+```json
+{
+  "id": "1.21.1",
+  "type": "release",
+  "source": "mojang",
+  "release_time": "2024-08-08T10:02:29+00:00",
+  "metadata_url": "https://piston-meta.mojang.com/...",
+  "java": 21,
+  "main_class": "net.minecraft.client.main.Main",
+  "asset_index": "17",
+  "library_count": 42,
+  "downloads": ["client", "client_mappings", "server", "server_mappings"]
+}
+```
+
+| Field | Description |
+|---|---|
+| `id` | The version ID string. |
+| `type` | Normalised era name. |
+| `source` | Always `mojang` for Mojang versions. |
+| `release_time` | ISO 8601 release timestamp from the Mojang manifest. |
+| `metadata_url` | URL to the raw version JSON on Mojang's servers. |
+| `java` | Required Java major version (from `javaVersion.majorVersion`). |
+| `main_class` | Entry-point class used to launch the game. |
+| `asset_index` | Asset index ID used to download game assets. |
+| `library_count` | Number of library entries in the version manifest. |
+| `downloads` | List of available download artifact keys (e.g. `client`, `server`). |
+
+**Omniarchive versions** return the raw crawled entry, which contains the direct JAR URL and minimal era metadata:
+
+```json
+{
+  "id": "c0.30",
+  "type": "classic",
+  "source": "omniarchive",
+  "release_time": null,
+  "metadata_url": "https://omniarchive.net/archive/java/client/classic/c0.30.jar",
+  "java": null,
+  "main_class": null,
+  "asset_index": null,
+  "library_count": 0,
+  "downloads": ["client"]
+}
+```
+
+<Info>
+  Mojang version manifests are cached locally under `~/.mcli/cache/` for up to 30 days. If you need to force a refresh, remove the relevant cached JSON file from that directory.
+</Info>
+
+Any source warnings (e.g. a network failure on one source while `--source auto` is used) are written to stderr after the JSON output.
+
+## Examples
+
+Show metadata for a modern release:
+
+```bash
+mcli info 1.21.1
+```
+
+Show metadata for a Mojang-tracked beta build:
+
+```bash
+mcli info b1.7.3
+```
+
+Look up a classic build explicitly from Omniarchive:
+
+```bash
+mcli info c0.30 --source omniarchive
+```
+
+<Tip>
+  Use `mcli info` before launching an unfamiliar historical version to confirm which Java major version is required and whether MCLI has a download URL for it.
+</Tip>
+
+<Warning>
+  If the version ID is not found in any queried source, MCLI exits with a non-zero status and the message `Version not found: <id>`. Double-check the ID with `mcli versions` or `mcli search`.
+</Warning>

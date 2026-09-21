@@ -1,0 +1,126 @@
+---
+title: "Install Mods and Modpacks from Modrinth"
+sidebarTitle: "Mods & Modpacks"
+description: "Search, install, and manage mods and modpacks from the Modrinth API directly in MCLI, with automatic dependency resolution and .mrpack support."
+---
+
+MCLI integrates with the Modrinth API to search, install, and manage mods and modpacks directly from the command line. Every mod and modpack operation targets a named instance so files are always placed in the correct isolated environment. Dependency resolution is automatic by default, and the full Modrinth search index is available without leaving the terminal.
+
+## Searching mods
+
+Use `mcli mods search` to query the Modrinth project index. Filter by Minecraft version and loader to narrow results before installing.
+
+```bash
+mcli mods search sodium
+mcli mods search sodium --minecraft 1.21.1 --loader fabric
+mcli mods search sodium --limit 5
+```
+
+Each result line is formatted as three columns: `project_id`, `title`, and `description`. Use the `project_id` or slug from the output as the target for `mcli mods install`.
+
+| Flag | Description |
+|---|---|
+| `--minecraft` | Filter to versions compatible with this MC release |
+| `--loader` | Filter to a specific modloader (e.g. `fabric`, `forge`) |
+| `--limit` | Maximum number of results to return (default `10`) |
+
+## Installing mods
+
+`mcli mods install` downloads the mod into the instance's `mods` folder and resolves required dependencies automatically.
+
+```bash
+mcli mods install sodium --instance survival --loader fabric
+mcli mods install sodium --instance survival --minecraft 1.21.1 --loader fabric
+mcli mods install sodium --instance survival --loader fabric --no-deps
+```
+
+<Steps>
+  <Step title="Version selection">
+    MCLI queries the Modrinth API for all versions of the project compatible
+    with the given `--minecraft` version and `--loader`, then picks the newest
+    stable (`release`-type) entry. Beta and alpha versions are used only if no
+    release is available.
+  </Step>
+  <Step title="Dependency resolution">
+    By default, all `required` dependencies are resolved and installed
+    recursively. Pass `--no-deps` to skip this step and install only the
+    requested project file.
+  </Step>
+  <Step title="Download">
+    The primary file for the selected version is downloaded and written to
+    `~/.mcli/instances/<name>/minecraft/mods/`.
+  </Step>
+</Steps>
+
+<Info>
+  Mods are installed into `~/.mcli/instances/<name>/minecraft/mods/`. If the
+  instance was created with `mcli instance create`, this directory exists
+  automatically.
+</Info>
+
+## Listing installed mods
+
+List every file currently present in the instance's `mods` directory:
+
+```bash
+mcli mods list --instance survival
+```
+
+Each line is the filename of an installed mod JAR.
+
+## Removing mods
+
+Remove a mod by matching its filename (substring match, case-insensitive):
+
+```bash
+mcli mods remove sodium --instance survival
+```
+
+All files whose name contains the given string are deleted. If no file matches, MCLI prints a notice and exits cleanly.
+
+## Modpacks
+
+Modrinth modpacks use the `.mrpack` format. MCLI handles downloading, unpacking override files, and fetching all individual mod entries declared in `modrinth.index.json`.
+
+### Searching modpacks
+
+```bash
+mcli modpack search "fabulously optimized"
+```
+
+Output columns match the mod search format: `project_id`, `title`, and `description`.
+
+### Installing a modpack
+
+```bash
+mcli modpack install fabulously-optimized --instance survival
+```
+
+<Steps>
+  <Step title="Version selection">
+    MCLI selects the newest compatible `.mrpack` release for the instance's
+    Minecraft version using the same stable-first ranking as mod installs.
+  </Step>
+  <Step title="Override extraction">
+    Files under the `overrides/` and `client-overrides/` directories inside
+    the `.mrpack` archive are extracted directly into the instance game
+    directory, preserving their relative paths.
+  </Step>
+  <Step title="Mod downloads">
+    Every entry in `modrinth.index.json` with a client-supported environment
+    is downloaded to the path specified in the index, relative to the instance
+    game directory.
+  </Step>
+</Steps>
+
+<Note>
+  MCLI picks the newest stable (`release`-type) Modrinth version compatible
+  with the instance's Minecraft version and loader. If no release-type version
+  exists, beta and alpha versions are considered as a fallback.
+</Note>
+
+<Warning>
+  The modpack file must be `.mrpack` format. Modrinth project versions whose
+  primary file does not carry the `.mrpack` extension will be rejected with an
+  error.
+</Warning>

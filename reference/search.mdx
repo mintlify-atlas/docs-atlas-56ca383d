@@ -1,0 +1,82 @@
+---
+title: "mcli search — Search Minecraft Versions by Name"
+sidebarTitle: "search"
+description: "Search across all Minecraft version sources with substring matching ranked by relevance, with optional era type, source, and result-limit filters."
+---
+
+The `mcli search` command looks up Minecraft versions whose ID contains a given query string and returns results ordered by relevance — exact matches first, then prefix matches, then any substring match, with recency as a tiebreaker. Unlike `mcli versions --query`, `search` is purpose-built for discovery: it defaults to a result cap of 25 and ranks results so the most likely target appears at the top.
+
+## Synopsis
+
+```bash
+mcli search <query> [--source <source>] [--type <era>] [--limit <n>]
+```
+
+## Arguments
+
+| Argument | Required | Description |
+|---|---|---|
+| `query` | Yes | Substring to match against version IDs. The match is case-insensitive. |
+
+## Flags
+
+| Flag | Values | Default | Description |
+|---|---|---|---|
+| `--source` | `auto`, `mojang`, `omniarchive` | `auto` | Which version source(s) to search. `auto` merges both, with Mojang taking precedence on duplicate IDs. |
+| `--type` | `release`, `snapshot`, `beta`, `alpha`, `infdev`, `indev`, `classic`, `preclassic` | — | Restrict results to a single era type. |
+| `--limit` | integer | `25` | Maximum number of results to display. |
+
+<Note>
+  Relevance ranking prioritises: **exact match** → **prefix match** → **substring match** → **most recent release date**. Adjust `--limit` if you need more or fewer rows.
+</Note>
+
+## Output Format
+
+Results are printed as a fixed-width text table with three columns. The `RELEASED` column is omitted because search results are sorted by relevance rather than date.
+
+```text
+VERSION                      ERA          SOURCE
+--------------------------------------------------------
+1.7.10                       release      mojang
+1.7.9                        release      mojang
+1.7.8                        release      mojang
+1.7.7                        release      mojang
+1.7.6                        release      mojang
+...
+```
+
+| Column | Width | Description |
+|---|---|---|
+| `VERSION` | 28 chars | The version ID string. |
+| `ERA` | 12 chars | Normalised era (`old_beta` → `beta`, `old_alpha` → `alpha`). |
+| `SOURCE` | 12 chars | `mojang` or `omniarchive`. |
+
+Any source errors encountered during the query are written to stderr after the table.
+
+## Examples
+
+Search for all versions containing `1.7`:
+
+```bash
+mcli search "1.7"
+```
+
+Search for beta versions whose ID starts with `b1`:
+
+```bash
+mcli search b1 --type beta
+```
+
+Search Omniarchive for classic-era versions:
+
+```bash
+mcli search classic --source omniarchive
+```
+
+<Tip>
+  To retrieve the full metadata for any version shown in search results, pass its exact ID to `mcli info`. For example: `mcli info 1.7.10`.
+</Tip>
+
+<Warning>
+  Omniarchive is discovered by crawling a live web directory. If the site is temporarily unavailable, `--source omniarchive` or `--source auto` will report a source warning on stderr and return only the results from whichever sources succeeded.
+</Warning>

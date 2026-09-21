@@ -1,0 +1,144 @@
+---
+title: "mcli instance — Create and Manage Game Instances"
+sidebarTitle: "instance"
+description: "Create, launch, list, clone, configure, and delete isolated Minecraft game instances, each with its own saves, mods, and resource packs."
+---
+
+`mcli instance` manages self-contained Minecraft installations called instances. Each instance gets its own directory under `~/.mcli/instances/<name>/` with separate sub-folders for the game data, mods, resource packs, shader packs, and screenshots. Instances are tracked in `~/.mcli/instances.json` and can target any version and era that MCLI supports, including historical builds from Omniarchive. Instance names may contain letters, numbers, dots, underscores, and hyphens.
+
+## Synopsis
+
+```text
+mcli instance <subcommand> [args]
+```
+
+## Subcommands
+
+### `mcli instance create <name> <era> <version> [--source]`
+
+Creates a new instance and registers it in the index. MCLI creates the instance directory and the standard sub-folders (`minecraft`, `mods`, `resourcepacks`, `shaderpacks`, `screenshots`). An `instance.json` manifest is written inside the directory.
+
+| Argument | Required | Description |
+|----------|----------|-------------|
+| `name` | Yes | Unique identifier for the instance. Letters, numbers, `.`, `_`, `-` only. |
+| `era` | Yes | Version era. Must be one of: `release`, `snapshot`, `beta`, `alpha`, `infdev`, `indev`, `classic`, `preclassic`. |
+| `version` | Yes | Exact version ID (e.g. `1.21.1`, `b1.7.3`, `c0.30`). |
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--source` | `auto` | Version source to use. One of: `auto`, `mojang`, `omniarchive`. |
+
+```text
+Created instance survival: release 1.21.1
+/home/user/.mcli/instances/survival
+```
+
+---
+
+### `mcli instance list`
+
+Lists all registered instances. Each row shows the instance name, era, version, and source.
+
+```text
+survival             release    1.21.1               mojang
+creative-114         release    1.14.4               mojang
+beta-world           beta       b1.7.3               omniarchive
+```
+
+---
+
+### `mcli instance info <name>`
+
+Prints the full JSON manifest for the named instance, including its name, era, version, source, and filesystem path.
+
+```json
+{
+  "name": "survival",
+  "era": "release",
+  "version": "1.21.1",
+  "source": "auto",
+  "path": "/home/user/.mcli/instances/survival"
+}
+```
+
+---
+
+### `mcli instance launch <name>`
+
+Launches Minecraft using the version and source configured for the named instance, with the instance's `minecraft/` sub-folder set as the game directory. Saves, options, resource packs, and screenshots are all written there, keeping the instance fully isolated from other instances.
+
+```text
+Minecraft started from instance survival (PID 12345)
+```
+
+---
+
+### `mcli instance delete <name> [--keep-files]`
+
+Removes the instance from the registry. By default, the instance directory and all of its contents are deleted from disk. Pass `--keep-files` to unregister the instance without touching the filesystem.
+
+| Flag | Description |
+|------|-------------|
+| `--keep-files` | Remove the instance from the index but leave its files on disk. |
+
+```text
+Deleted instance survival-copy
+Deleted instance survival (files kept)
+```
+
+---
+
+### `mcli instance clone <name> <destination>`
+
+Copies an existing instance — including all files in its directory — to a new instance named `<destination>`. The cloned instance is immediately registered and ready to launch.
+
+| Argument | Required | Description |
+|----------|----------|-------------|
+| `name` | Yes | The name of the source instance to copy. |
+| `destination` | Yes | The name for the new cloned instance. |
+
+```text
+Cloned survival -> survival-copy
+```
+
+---
+
+### `mcli instance set <name> <key> <value>`
+
+Updates a single field in the named instance's manifest. After updating, MCLI prints the full updated manifest as JSON. Valid keys are `version`, `era`, and `source`.
+
+| Argument | Required | Description |
+|----------|----------|-------------|
+| `name` | Yes | The instance to modify. |
+| `key` | Yes | The field to update. Must be one of: `version`, `era`, `source`. |
+| `value` | Yes | The new value for the field. |
+
+---
+
+## Examples
+
+```bash
+# Create a new release instance
+mcli instance create survival release 1.21.1
+
+# List all instances
+mcli instance list
+
+# Show the full manifest for an instance
+mcli instance info survival
+
+# Launch an instance
+mcli instance launch survival
+
+# Clone an instance to a new name
+mcli instance clone survival survival-copy
+
+# Update the version of an instance
+mcli instance set survival version 1.21.4
+
+# Delete an instance and remove its files
+mcli instance delete survival-copy
+
+# Unregister an instance but keep its files on disk
+mcli instance delete survival --keep-files
+```

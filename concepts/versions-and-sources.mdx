@@ -1,0 +1,113 @@
+---
+title: "Minecraft Versions and Sources in MCLI"
+sidebarTitle: "Versions & Sources"
+description: "Learn how MCLI organises Minecraft builds across eight version eras and fetches them from the Mojang manifest and Omniarchive sources."
+---
+
+MCLI presents every Minecraft build — from the earliest pre-classic experiments through to the latest modern snapshots — through a unified version model. Each build is assigned to one of eight **eras**, retrieved from one of two **sources**, and represented internally as a `Version` object. Understanding how eras and sources work together helps you pinpoint the exact build you want and control where MCLI fetches it from.
+
+## Version Eras
+
+MCLI groups all builds into eight eras that follow Minecraft's public development history. The era of a version is exposed in the `ERA` column of `mcli versions` output and can be used as a filter with `--type`.
+
+| Era | Description |
+|---|---|
+| `release` | Full, numbered release versions (1.0 and later). These are the stable builds Mojang ships to all players. |
+| `snapshot` | Weekly development snapshots published before a release. Named with a year-week pattern such as `24w40a`. |
+| `beta` | Java Edition Beta builds (Beta 1.0 – Beta 1.9.pre6, 2010–2011). Survival mechanics matured in this era. |
+| `alpha` | Java Edition Alpha builds (0.1.0 – 0.30, 2010). The first publicly distributed Minecraft versions. |
+| `infdev` | Infinite-terrain development builds (early 2010). Preceded Alpha; introduced the first procedurally generated worlds. |
+| `indev` | In-development internal prototypes (late 2009 – early 2010). Small contained levels; rarely distributed publicly. |
+| `classic` | Classic multiplayer and creative builds (2009). The era when Minecraft first gained public attention. |
+| `preclassic` | The earliest known Notch prototypes, predating the Classic era. Extremely minimal game states. |
+
+<Info>
+The `--historical` flag on `mcli versions` and `mcli random` hides `release` and `snapshot` builds so only the six historical eras are shown.
+</Info>
+
+### Filtering by era
+
+Every command that accepts `--type` uses these era names directly:
+
+```bash
+# List all beta builds
+mcli versions --type beta
+
+# Launch a specific classic build
+mcli classic c0.30
+
+# Pick a random historical build restricted to alpha
+mcli random --type alpha
+```
+
+## Sources
+
+MCLI fetches version metadata and client JARs from two independent sources. You can see which source supplied a build in the `SOURCE` column of `mcli versions` output.
+
+<CardGroup cols={2}>
+  <Card title="Mojang" icon="cube">
+    Fetches the official version manifest from `https://piston-meta.mojang.com/mc/game/version_manifest_v2.json`. Covers all modern releases, snapshots, and the preserved legacy builds Mojang maintains. Metadata is cached locally under `~/.mcli/cache/` (manifest: 1 hour default; version detail: 30 days). This is the primary source for all installs, library downloads, asset fetches, and modloader support.
+  </Card>
+  <Card title="Omniarchive" icon="archive">
+    Crawls `https://omniarchive.net/archive/java/client/` to discover directly hosted historical JAR files. Omniarchive may carry pre-release variants and preserved builds not present in Mojang's manifest. Because it is web-crawled rather than API-driven, each `mcli versions --source omniarchive` call performs live HTTP requests against the archive.
+  </Card>
+</CardGroup>
+
+### The `auto` source (default)
+
+When no `--source` flag is passed, MCLI queries **both** sources and merges the results. Mojang takes precedence: if a version ID exists in both sources, the Mojang record is used. Source-specific errors are printed as warnings to `stderr` so the command still succeeds if one source is unavailable.
+
+```text
+$ mcli versions
+VERSION                      ERA          SOURCE       RELEASED
+------------------------------------------------------------------------------
+1.21.1                       release      mojang       2024-08-08T...
+...
+1 source warning(s) printed to stderr when one backend is unreachable
+```
+
+### The `--source` flag
+
+Pass `--source` to restrict MCLI to a single source or to explicitly enable the merged mode:
+
+```bash
+# Official Mojang manifest only
+mcli versions --source mojang
+
+# Omniarchive crawl only
+mcli versions --source omniarchive
+
+# Both sources merged (explicit; same as default)
+mcli versions --source auto
+```
+
+The flag is accepted by `mcli versions`, `mcli search`, `mcli info`, `mcli stats`, `mcli random`, `mcli instance create`, and all era launch sub-commands (`mcli release`, `mcli beta`, etc.).
+
+## Version Type Normalisation
+
+Mojang's version manifest uses the internal type strings `old_beta` and `old_alpha` for preserved legacy builds. MCLI normalises these to `beta` and `alpha` in all output and filtering so they align with the era names used across the rest of the CLI.
+
+```bash
+# Mojang manifest internal value → MCLI display value
+old_beta  →  beta
+old_alpha →  alpha
+```
+
+This normalisation is applied in `mcli versions`, `mcli search`, `mcli stats`, and before era-mismatch validation in `mcli <era> <version>`.
+
+## The `Version` Dataclass
+
+Every build is represented as a `Version` dataclass defined in `mcli/model.py`. The fields are:
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | `str` | The version identifier (e.g. `1.21.1`, `b1.7.3`, `c0.30`). |
+| `type` | `str` | The era string as returned by the source (`release`, `old_beta`, `alpha`, `classic`, etc.). |
+| `source` | `str` | Either `"mojang"` or `"omniarchive"`. |
+| `url` | `str \| None` | URL of the version's metadata JSON (Mojang) or client JAR (Omniarchive). |
+| `release_time` | `str \| None` | ISO 8601 release timestamp when available from the source. |
+| `sha1` | `str \| None` | SHA-1 checksum of the version metadata, when provided by Mojang. |
+
+<Info>
+Omniarchive versions bypass MCLI's standard launcher pipeline. When a resolved `Version` has `source == "omniarchive"`, MCLI invokes the legacy launch path in `mcli/legacy.py` instead of the normal `mcli/launcher.py` flow. Modloaders (Fabric, Forge, NeoForge, Quilt) are not available for Omniarchive-backed builds.
+</Info>

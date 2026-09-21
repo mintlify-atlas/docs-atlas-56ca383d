@@ -1,0 +1,82 @@
+---
+title: "mcli java — Install and Manage Java Runtimes"
+sidebarTitle: "java"
+description: "List, install, and locate Adoptium-managed JRE runtimes used to launch Minecraft. Supports managed installs for Java 8, 17, 21, and 25."
+---
+
+`mcli java` manages the Java runtimes that MCLI uses to launch Minecraft. Runtimes are downloaded from the [Eclipse Adoptium](https://adoptium.net/) API and installed into `~/.mcli/runtimes/`, keeping them isolated from any system-wide Java installation. MCLI automatically selects and installs the correct version for each Minecraft release based on Mojang's version metadata, so you rarely need to interact with these subcommands directly — but they are available when you want to pre-install, inspect, or troubleshoot your Java environment.
+
+## Synopsis
+
+```text
+mcli java <subcommand> [args]
+```
+
+## Subcommands
+
+### `mcli java list`
+
+Displays all available Java runtimes. The output includes:
+
+- **system** — the `java` binary found on your `PATH` (if any), along with its detected major version.
+- **managed** — each JRE installed under `~/.mcli/runtimes/`, identified by name and the full path to its executable.
+
+```text
+system  Java 21  /usr/bin/java
+managed java-17       /home/user/.mcli/runtimes/java-17/bin/java
+managed java-21       /home/user/.mcli/runtimes/java-21/bin/java
+```
+
+---
+
+### `mcli java install <major>`
+
+Downloads and installs the Adoptium JRE for the given major version into `~/.mcli/runtimes/java-<major>/`. MCLI selects the correct archive for your operating system and CPU architecture automatically. If the runtime is already installed, the command exits immediately without re-downloading.
+
+| Argument | Required | Description |
+|----------|----------|-------------|
+| `major` | Yes | Java major version to install. Must be one of: `8`, `17`, `21`, `25`. |
+
+#### `--force` flag
+
+Pass `--force` to re-download and reinstall the runtime even if it is already present. Use this to recover from a corrupted installation.
+
+| Flag | Description |
+|------|-------------|
+| `--force` | Re-download and overwrite the existing runtime. |
+
+---
+
+### `mcli java path <major>`
+
+Prints the absolute path to the `java` executable for the managed runtime of the given major version. If the requested version is not installed, the command exits with an error.
+
+| Argument | Required | Description |
+|----------|----------|-------------|
+| `major` | Yes | Java major version to locate. Must be one of: `8`, `17`, `21`, `25`. |
+
+```text
+/home/user/.mcli/runtimes/java-21/bin/java
+```
+
+---
+
+## Examples
+
+```bash
+# List system and managed Java runtimes
+mcli java list
+
+# Install the Java 21 JRE
+mcli java install 21
+
+# Reinstall Java 8 from scratch
+mcli java install 8 --force
+
+# Print the path to the managed Java 17 executable
+mcli java path 17
+```
+
+<Tip>
+  MCLI automatically installs the required Java version during launch if it is not already present, so you do not need to run `mcli java install` before playing. Use it to pre-install a runtime ahead of time or to force a clean reinstall after a corrupted download.
+</Tip>

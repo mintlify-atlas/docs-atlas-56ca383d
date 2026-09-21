@@ -1,0 +1,105 @@
+---
+title: "mcli mods — Search and Install Modrinth Mods"
+sidebarTitle: "mods"
+description: "Search Modrinth for mods and install, remove, or list them inside any MCLI instance using the search, install, remove, and list subcommands."
+---
+
+The `mcli mods` command group lets you discover mods on Modrinth and manage them inside a named MCLI instance. Mods are downloaded directly from Modrinth into the instance's `mods/` folder, and dependency resolution is handled automatically unless you opt out.
+
+## Synopsis
+
+```text
+mcli mods <subcommand> [args]
+```
+
+## Subcommands
+
+### `mcli mods search`
+
+```text
+mcli mods search <query> [--minecraft <version>] [--loader <loader>] [--limit <n>]
+```
+
+Queries the Modrinth search API for mods matching `<query>`. Results are printed one per line in the format `project_id  title — description`. The default result limit is **10**.
+
+| Argument / Flag | Required | Description |
+|---|---|---|
+| `query` | Yes | Search terms to send to Modrinth |
+| `--minecraft` | No | Filter by Minecraft version (e.g. `1.21.1`) |
+| `--loader` | No | Filter by mod loader (e.g. `fabric`, `forge`) |
+| `--limit` | No | Maximum number of results to return (default `10`) |
+
+---
+
+### `mcli mods install`
+
+```text
+mcli mods install <project> --instance <name> [--minecraft <version>] [--loader <loader>] [--no-deps]
+```
+
+Installs a mod from Modrinth into the specified instance. MCLI resolves the newest `release`-type version that is compatible with the given Minecraft version and loader, then downloads the primary JAR into `~/.mcli/instances/<name>/minecraft/mods/`. Required dependencies are installed recursively unless `--no-deps` is passed.
+
+| Argument / Flag | Required | Description |
+|---|---|---|
+| `project` | Yes | Modrinth project ID or slug |
+| `--instance` | Yes | Target instance name |
+| `--minecraft` | No | Minecraft version to target; falls back to the instance's own version |
+| `--loader` | No | Mod loader to target (e.g. `fabric`, `quilt`, `forge`, `neoforge`) |
+| `--no-deps` | No | Skip automatic dependency installation |
+
+---
+
+### `mcli mods remove`
+
+```text
+mcli mods remove <name> --instance <instance>
+```
+
+Removes any mod file whose filename contains `<name>` (case-insensitive substring match) from the instance's `mods/` directory. Prints the name of every file removed, or a message if no match was found.
+
+| Argument / Flag | Required | Description |
+|---|---|---|
+| `name` | Yes | Substring to match against installed mod filenames |
+| `--instance` | Yes | Instance to remove the mod from |
+
+---
+
+### `mcli mods list`
+
+```text
+mcli mods list --instance <name>
+```
+
+Lists all files currently present in the instance's `mods/` directory, one filename per line.
+
+| Flag | Required | Description |
+|---|---|---|
+| `--instance` | Yes | Instance whose mods directory to list |
+
+---
+
+## Examples
+
+```bash
+# Search for sodium mods on Modrinth
+mcli mods search sodium
+
+# Search filtered by Minecraft version and loader
+mcli mods search sodium --minecraft 1.21.1 --loader fabric
+
+# Install sodium into the "survival" instance (loader auto-selected)
+mcli mods install sodium --instance survival --loader fabric
+
+# Install with explicit Minecraft version, skipping dependency resolution
+mcli mods install sodium --instance survival --minecraft 1.21.1 --loader fabric --no-deps
+
+# List all installed mods in the "survival" instance
+mcli mods list --instance survival
+
+# Remove sodium from the "survival" instance
+mcli mods remove sodium --instance survival
+```
+
+<Note>
+  MCLI picks the newest `release`-type Modrinth version that is compatible with the specified Minecraft version and loader. If no `release` version matches, it falls back to `beta` and then `alpha` versions sorted by publication date.
+</Note>

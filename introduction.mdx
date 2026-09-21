@@ -1,0 +1,58 @@
+---
+title: "MCLI: The Minecraft Command-Line Launcher"
+sidebarTitle: "Introduction"
+description: "MCLI is a Python-powered CLI launcher that manages Minecraft accounts, Java runtimes, instances, modloaders, mods, and servers from your terminal."
+---
+
+MCLI is an open-source, command-line Minecraft launcher written in Python. Where graphical launchers bury options behind menus, MCLI exposes the full launcher surface through a single `mcli` command — letting you log in with a Microsoft account, browse and launch any Minecraft version (including historical builds sourced from Omniarchive), manage isolated instances, install Fabric, Forge, NeoForge, or Quilt, search Modrinth for mods and modpacks, and spin up dedicated servers, all without leaving your terminal.
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Quick Installation" icon="download" href="/installation">
+    Download a standalone binary for Windows, macOS, or Linux, install via a native package, or build from source with `pip install -e .`. No separate Python setup required for prebuilt binaries.
+  </Card>
+  <Card title="Five-Minute Quickstart" icon="rocket" href="/quickstart">
+    Log in, browse versions, and launch Minecraft 1.21.1 in under five minutes with a handful of commands.
+  </Card>
+  <Card title="Microsoft Accounts" icon="user" href="/guides/accounts">
+    Authenticate with Microsoft via browser-based OAuth. Store and switch between multiple accounts using `--alias`, and refresh or remove tokens at any time.
+  </Card>
+  <Card title="Java Runtime Management" icon="coffee" href="/guides/java">
+    MCLI automatically selects and installs the correct Java version (8, 17, 21, or 25) for each Minecraft release so you never have to manage Java manually.
+  </Card>
+  <Card title="Isolated Instances" icon="box" href="/guides/instances">
+    Create named instances that each have their own saves, settings, configs, mods, resource packs, and screenshots — no cross-contamination between profiles.
+  </Card>
+  <Card title="Modloaders" icon="puzzle-piece" href="/guides/modloaders">
+    Launch any Mojang-backed version with Fabric, Quilt, Forge, or NeoForge in a single command. Loaders are downloaded and wired up automatically.
+  </Card>
+  <Card title="Mods & Modpacks" icon="cubes" href="/guides/mods-and-modpacks">
+    Search, install, and manage mods and modpacks from Modrinth directly through the CLI. Dependency resolution is handled for you.
+  </Card>
+  <Card title="Dedicated Servers" icon="server" href="/guides/servers">
+    Create and manage vanilla or Paper servers with `mcli server`. MCLI never auto-accepts the Mojang EULA — you stay in control.
+  </Card>
+  <Card title="Historical Versions" icon="clock-rotate-left" href="/guides/historical-versions">
+    Launch classic, infdev, indev, alpha, and beta builds sourced from the official Mojang manifest and Omniarchive's preserved archive.
+  </Card>
+</CardGroup>
+
+## Project Status
+
+MCLI 1.0 ships the complete launcher architecture — accounts, Java management, instances, modloaders, Modrinth integration, and servers are all functional. It should still be treated as an early project until launch paths have been extensively tested across the full matrix of Minecraft versions, operating systems, Java runtimes, and modloader combinations. Historical builds in particular can require version-specific compatibility work.
+
+Items on the active roadmap include:
+
+- CurseForge integration
+- Mod updates and compatibility management
+- Import from Prism, MultiMC, or an existing `.minecraft` directory
+- Download progress bars, automatic retries, and resume
+- Crash diagnostics and `mcli doctor`
+- Server console management and backups
+- Stronger historical compatibility profiles
+- Packaged Windows, macOS, and Linux releases
+
+<Note>
+  MCLI is an independent project and is not affiliated with, endorsed by, or sponsored by Mojang Studios or Microsoft. Minecraft is a trademark of Microsoft Corporation.
+</Note>

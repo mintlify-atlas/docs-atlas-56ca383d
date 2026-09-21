@@ -1,0 +1,82 @@
+---
+title: "mcli modpack — Install Modrinth Modpacks"
+sidebarTitle: "modpack"
+description: "Search Modrinth for modpacks and install .mrpack archives into an MCLI instance, extracting overrides and downloading all indexed mod files."
+---
+
+The `mcli modpack` command group lets you discover and install Modrinth modpacks (`.mrpack` files) directly into a named MCLI instance. MCLI handles downloading the pack, extracting override files, and fetching every mod listed in the pack's index — so the instance is ready to launch immediately after installation.
+
+## Synopsis
+
+```text
+mcli modpack <subcommand> [args]
+```
+
+## Subcommands
+
+### `mcli modpack search`
+
+```text
+mcli modpack search <query> [--minecraft <version>] [--loader <loader>] [--limit <n>]
+```
+
+Queries the Modrinth search API for modpacks matching `<query>`. Results are printed one per line in the format `project_id  title — description`. The default result limit is **10**.
+
+| Argument / Flag | Required | Description |
+|---|---|---|
+| `query` | Yes | Search terms to send to Modrinth |
+| `--minecraft` | No | Filter by Minecraft version (e.g. `1.21.1`) |
+| `--loader` | No | Filter by mod loader (e.g. `fabric`, `quilt`) |
+| `--limit` | No | Maximum number of results to return (default `10`) |
+
+---
+
+### `mcli modpack install`
+
+```text
+mcli modpack install <project> --instance <name>
+```
+
+Downloads the `.mrpack` file for the given Modrinth project and installs it into the named instance. MCLI selects the newest compatible pack version based on the instance's configured Minecraft version.
+
+| Argument / Flag | Required | Description |
+|---|---|---|
+| `project` | Yes | Modrinth project ID or slug |
+| `--instance` | Yes | Target instance name |
+
+---
+
+## What `modpack install` does
+
+<Steps>
+  ### Download the `.mrpack` file
+  MCLI fetches the newest compatible `.mrpack` archive from Modrinth and saves it to a temporary directory inside the instance folder.
+
+  ### Extract overrides
+  The contents of `overrides/` and `client-overrides/` inside the archive are copied directly into the instance's `minecraft/` directory, preserving the relative path structure (e.g. `overrides/config/sodium.json` → `minecraft/config/sodium.json`).
+
+  ### Download indexed mod files
+  Every entry in `modrinth.index.json` that is not marked `unsupported` for the client environment is downloaded from its listed URL and written to the path specified in the index, relative to the `minecraft/` directory.
+
+  ### Read the dependencies block
+  The `dependencies` object inside `modrinth.index.json` is returned and printed after installation completes. This includes the required `minecraft` version and any loader version constraints declared by the pack author.
+</Steps>
+
+---
+
+## Examples
+
+```bash
+# Search for a modpack by name
+mcli modpack search "fabulously optimized"
+
+# Search with a loader filter
+mcli modpack search "all of fabric" --loader fabric
+
+# Install a modpack into an existing instance
+mcli modpack install fabulously-optimized --instance my-instance
+```
+
+<Note>
+  Modpack project IDs and slugs can be found from the `mcli modpack search` output. You can use either the short `project_id` field or the human-readable Modrinth slug as the `project` argument to `mcli modpack install`.
+</Note>

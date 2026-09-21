@@ -1,0 +1,50 @@
+---
+title: "mcli login — Authenticate with Microsoft"
+sidebarTitle: "login"
+description: "Authenticate with Microsoft via device-code OAuth, retrieve your Minecraft profile, and save the session token to ~/.mcli/accounts.json."
+---
+
+`mcli login` authenticates your Microsoft account using the device-code OAuth flow. Once your identity is confirmed, MCLI exchanges the Microsoft token through Xbox Live and XSTS for a Minecraft Services access token, fetches your Java Edition profile, and saves everything — including the refresh token — to `~/.mcli/accounts.json`. No browser automation or password entry is required; you only need to visit a short URL and type a code.
+
+## Synopsis
+
+```text
+mcli login [--alias <name>]
+```
+
+## Flags
+
+| Flag | Type | Default | Description |
+|------|------|---------|-------------|
+| `--alias` | string | profile username | A memorable name used to identify this account in the accounts store. If omitted, MCLI uses the Minecraft profile username as the key. |
+
+## Authentication flow
+
+1. MCLI requests a device code from Microsoft and prints the verification URL and user code to the terminal.
+2. MCLI attempts to open the URL in your default browser automatically.
+3. Visit the URL, sign in to your Microsoft account, and enter the displayed code when prompted.
+4. MCLI polls Microsoft until the code is approved, then runs the full token exchange: Microsoft → Xbox Live → XSTS → Minecraft Services.
+5. Your Minecraft Java Edition profile is fetched and the session is written to `~/.mcli/accounts.json`.
+
+## Output
+
+```text
+Logged in as <username> (<UUID>)
+```
+
+## Examples
+
+```bash
+# Log in using the Minecraft username as the account key
+mcli login
+
+# Log in and save the account under the alias "main"
+mcli login --alias main
+
+# Log in with a second account under the alias "alt"
+mcli login --alias alt
+```
+
+<Note>
+  To manage multiple Microsoft accounts, provide a distinct `--alias` value for each login. After logging in with multiple accounts, use `mcli account use <alias>` to switch the active account used for launching.
+</Note>

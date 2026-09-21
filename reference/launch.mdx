@@ -1,0 +1,97 @@
+---
+title: "mcli <era> — Launch a Minecraft Version"
+sidebarTitle: "Launch"
+description: "Launch any Minecraft version by era with automatic file installation, Java selection, and optional modloader support via a single command."
+---
+
+The era subcommands — `release`, `snapshot`, `beta`, `alpha`, `infdev`, `indev`, `classic`, and `preclassic` — are the primary way to launch Minecraft with MCLI. Each one resolves the requested version from the configured source catalog, downloads all required game files, selects or auto-installs an appropriate Java runtime, optionally installs a modloader, and spawns the game process.
+
+## Synopsis
+
+```text
+mcli release    <version> [--source <source>] [--fabric|--forge|--neoforge|--quilt] [--loader-version <v>]
+mcli snapshot   <version> [--source <source>]
+mcli beta       <version> [--source <source>]
+mcli alpha      <version> [--source <source>]
+mcli infdev     <version> [--source <source>]
+mcli indev      <version> [--source <source>]
+mcli classic    <version> [--source <source>]
+mcli preclassic <version> [--source <source>]
+```
+
+## Arguments and Flags
+
+| Name | Type | Default | Description |
+|---|---|---|---|
+| `version` | positional, required | — | The version ID to launch, e.g. `1.21.1`, `b1.7.3`, `c0.30` |
+| `--source` | string | `auto` | Version source: `auto`, `mojang`, or `omniarchive` |
+| `--fabric` | flag | false | Launch with the Fabric modloader (`release` only, Mojang-sourced) |
+| `--forge` | flag | false | Launch with the Forge modloader |
+| `--neoforge` | flag | false | Launch with the NeoForge modloader |
+| `--quilt` | flag | false | Launch with the Quilt modloader |
+| `--loader-version` | string | latest | Pin a specific modloader version (used alongside any modloader flag) |
+
+<Note>
+The `--fabric`, `--forge`, `--neoforge`, and `--quilt` flags are mutually exclusive — only one may be supplied per invocation. Modloaders require a Mojang-sourced version; they cannot be used with Omniarchive-backed builds.
+</Note>
+
+## What Happens During Launch
+
+<Steps>
+  <Step title="Version resolved">
+    MCLI looks up the requested version ID in the source catalog. The `auto` source tries Mojang first and falls back to Omniarchive. If the version is not found, or the resolved era does not match the subcommand, the launch is aborted with an error.
+  </Step>
+  <Step title="Game files installed">
+    The client JAR is downloaded and verified. For Mojang-sourced versions, all required libraries and native binaries are downloaded and placed under `~/.mcli/libraries/`. Assets are fetched using **32 concurrent workers**, and progress is printed to the terminal as a percentage.
+  </Step>
+  <Step title="Java selected or auto-installed">
+    MCLI inspects the version metadata to determine the required Java major version and resolves a managed runtime under `~/.mcli/runtimes/`. If no managed runtime exists, one is installed automatically. You can override the executable with the `MCLI_JAVA` environment variable.
+  </Step>
+  <Step title="Modloader installed (if requested)">
+    When a modloader flag is present, MCLI installs the loader before launching:
+    - **Fabric / Quilt** — the loader profile JSON is fetched, its Maven libraries are downloaded, and the profile is merged into the base version metadata (overriding `mainClass` and extending the library and argument lists).
+    - **Forge / NeoForge** — the upstream installer JAR is run, which generates a launcher profile and populates a local libraries tree. MCLI then locates and merges that generated profile before launching.
+  </Step>
+  <Step title="Game process spawned">
+    The fully-assembled JVM command is executed via `subprocess.Popen`. The game's working directory is set to the version's isolated game folder under `~/.mcli/game/<version-id>/`. The process ID is printed to the terminal.
+  </Step>
+</Steps>
+
+## Memory Defaults
+
+MCLI automatically sets the JVM heap size based on the era of the version being launched when the version metadata does not already include an `-Xmx` argument.
+
+| Era | Default Heap |
+|---|---|
+| `preclassic`, `classic`, `indev`, `infdev` | 256 MB |
+| `alpha`, `beta` | 512 MB |
+| `release`, `snapshot` | 2 GB |
+
+## Examples
+
+```bash
+# Launch a modern release
+mcli release 1.21.1
+
+# Launch with Fabric modloader
+mcli release 1.21.1 --fabric
+
+# Launch with Forge modloader
+mcli release 1.20.1 --forge
+
+# Launch with a pinned Fabric loader version
+mcli release 1.21.1 --fabric --loader-version 0.15.11
+
+# Launch a Beta-era version
+mcli beta b1.7.3
+
+# Launch a Classic-era version
+mcli classic c0.30
+
+# Force Mojang as the version source
+mcli release 1.21.1 --source mojang
+```
+
+<Note>
+For versions sourced from Omniarchive, MCLI uses a legacy launch path (`launch_legacy`). This path inspects the JAR's `META-INF/MANIFEST.MF` to determine the entry point and invokes the client directly with minimal arguments. Modloaders are not supported on Omniarchive-backed versions.
+</Note>

@@ -1,20 +1,82 @@
 ---
-title: "Introduction"
-description: "Welcome to your project"
+title: "MCLI: The Minecraft Command-Line Launcher"
+sidebarTitle: "Home"
+description: "MCLI is a CLI launcher for Minecraft that manages accounts, Java runtimes, instances, modloaders, mods, and servers from one tool."
 ---
 
-Write a short description of your product here. What it does, who it's for, and what they can accomplish with it.
+MCLI brings the full Minecraft launcher experience to your terminal. Whether you're launching the latest release, digging into historical beta builds, spinning up a modded instance with Fabric, or running a Paper server — MCLI handles it all with a single, composable command-line interface.
 
-<Tip>
-  Ready to make this your own? Start by editing this page. Update your `docs.json` file to customize your site. Then fill out the [Quickstart](/quickstart) page.
-</Tip>
+<CardGroup cols={2}>
+  <Card title="Installation" icon="download" href="/installation">
+    Install MCLI from a prebuilt binary or from source on Windows, macOS, or Linux.
+  </Card>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Log in, install Java, and launch Minecraft in under five minutes.
+  </Card>
+  <Card title="Command Reference" icon="terminal" href="/reference/launch">
+    Every command, subcommand, and flag documented with real examples.
+  </Card>
+  <Card title="Instances" icon="layer-group" href="/guides/instances">
+    Isolate saves, mods, configs, and settings per game instance.
+  </Card>
+</CardGroup>
 
-<Card title="Quickstart" icon="rocket" href="/quickstart">
-  This card links to the quickstart page in your project.
-</Card>
-<Card title="Components" icon="puzzle-piece" href="https://mintlify.com/docs/components">
-  Add cards, callouts, steps, tabs, and more to design and structure your pages.
-</Card>
-<Card title="Settings" icon="gear" href="https://mintlify.com/docs/organize/settings">
-  Set your site name, branding, and navigation in the `docs.json` file.
-</Card>
+## What MCLI Does
+
+MCLI replaces the official Minecraft launcher for developers and power users who prefer the command line. It manages the full lifecycle of Minecraft clients and servers without a graphical interface.
+
+<CardGroup cols={3}>
+  <Card title="All Eras" icon="clock-rotate-left" href="/concepts/versions-and-sources">
+    Launch releases, snapshots, betas, alphas, infdev, indev, classic, and pre-classic builds.
+  </Card>
+  <Card title="Microsoft Accounts" icon="user-shield" href="/guides/accounts">
+    Authenticate with Microsoft OAuth and manage multiple account aliases.
+  </Card>
+  <Card title="Auto Java" icon="mug-hot" href="/guides/java">
+    MCLI downloads and selects the right Java runtime automatically.
+  </Card>
+  <Card title="Modloaders" icon="puzzle-piece" href="/guides/modloaders">
+    Install Fabric, Quilt, Forge, or NeoForge alongside any version.
+  </Card>
+  <Card title="Modrinth Mods" icon="cubes" href="/guides/mods-and-modpacks">
+    Search, install, and manage mods and modpacks from Modrinth.
+  </Card>
+  <Card title="Servers" icon="server" href="/guides/servers">
+    Create and run vanilla or Paper Minecraft servers locally.
+  </Card>
+</CardGroup>
+
+## Get Started in Minutes
+
+<Steps>
+  <Step title="Install MCLI">
+    Download a prebuilt binary from GitHub Releases or install from source with pip:
+    ```bash
+    python -m pip install -e .
+    ```
+  </Step>
+  <Step title="Log in with Microsoft">
+    Authenticate your Microsoft account so MCLI can launch authenticated Minecraft sessions:
+    ```bash
+    mcli login
+    ```
+  </Step>
+  <Step title="Launch Minecraft">
+    Pick a version and launch. MCLI installs Java and downloads game files automatically:
+    ```bash
+    mcli release 1.21.1
+    ```
+  </Step>
+  <Step title="Explore Further">
+    Create isolated instances, install modloaders, manage mods, and run servers — all from the same CLI.
+    ```bash
+    mcli instance create survival release 1.21.1
+    mcli release 1.21.1 --fabric
+    mcli mods install sodium --instance survival --loader fabric
+    ```
+  </Step>
+</Steps>
+
+<Note>
+  MCLI is an independent project and is not affiliated with, endorsed by, or sponsored by Mojang Studios or Microsoft. Minecraft is a trademark of Microsoft Corporation.
+</Note>

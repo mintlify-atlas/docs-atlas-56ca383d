@@ -1,0 +1,136 @@
+---
+title: "Manage Isolated Minecraft Instances"
+sidebarTitle: "Instances"
+description: "MCLI instances give each profile its own isolated game directory — keeping saves, mods, configs, resource packs, and screenshots completely separate."
+---
+
+Instances are named, isolated profiles that each get their own game directory under `~/.mcli/instances/<name>/`. Every instance stores its saves, settings, mods, resource packs, shader packs, and screenshots independently, so a modded profile never interferes with a vanilla one, and separate Minecraft versions stay entirely self-contained.
+
+## Creating an Instance
+
+```bash
+mcli instance create <name> <era> <version> [--source <source>]
+```
+
+- **name** — alphanumeric identifier (letters, numbers, `.`, `_`, `-`).
+- **era** — one of `release`, `snapshot`, `beta`, `alpha`, `infdev`, `indev`, `classic`, `preclassic`.
+- **version** — the version ID as it appears in MCLI's version catalog (e.g. `1.21.1`, `b1.7.3`).
+- **--source** — `auto` (default), `mojang`, or `omniarchive`. Determines where MCLI resolves the version.
+
+```bash
+# Create a vanilla 1.21.1 survival instance
+mcli instance create survival release 1.21.1
+
+# Create a beta instance backed by Mojang
+mcli instance create retro beta b1.7.3
+
+# Create an instance using an Omniarchive-sourced classic build
+mcli instance create classic-test classic c0.30 --source omniarchive
+```
+
+## Launching an Instance
+
+```bash
+mcli instance launch <name>
+```
+
+MCLI reads the instance's stored `era`, `version`, and `source`, resolves and installs the version if needed, then launches Minecraft with the instance's `minecraft/` subdirectory as the game directory. Saves, options, and mod files inside that directory are entirely separate from any other instance or a default `.minecraft` installation.
+
+```bash
+mcli instance launch survival
+```
+
+## Listing Instances
+
+```bash
+mcli instance list
+```
+
+Prints a table of all saved instances with four columns:
+
+```text
+NAME                 ERA        VERSION              SOURCE
+survival             release    1.21.1               auto
+retro                beta       b1.7.3               mojang
+classic-test         classic    c0.30                omniarchive
+```
+
+## Instance Info
+
+```bash
+mcli instance info <name>
+```
+
+Outputs the full instance record as JSON, including the resolved filesystem path:
+
+```json
+{
+  "name": "survival",
+  "era": "release",
+  "version": "1.21.1",
+  "source": "auto",
+  "path": "/home/user/.mcli/instances/survival"
+}
+```
+
+## Cloning an Instance
+
+```bash
+mcli instance clone <name> <destination>
+```
+
+Copies the entire instance directory — including all saves, mods, configs, and resource packs — into a new instance with the destination name. The original is left untouched.
+
+```bash
+mcli instance clone survival survival-backup
+```
+
+## Deleting an Instance
+
+```bash
+# Delete the instance record and all its files
+mcli instance delete survival-backup
+
+# Delete the record but keep the files on disk
+mcli instance delete survival-backup --keep-files
+```
+
+Use `--keep-files` if you want to archive the game directory manually before removing the MCLI record.
+
+## Updating Instance Metadata
+
+Use `mcli instance set` to change the version, era, or source for an existing instance without recreating it:
+
+```bash
+# Upgrade an instance to a newer version
+mcli instance set survival version 1.21.4
+
+# Change the era field
+mcli instance set survival era release
+
+# Switch the source
+mcli instance set survival source mojang
+```
+
+Editable fields are limited to `version`, `era`, and `source`. After a `set`, launch the instance as normal — MCLI will install the updated version if it is not already cached.
+
+## Directory Layout
+
+Each instance lives under `~/.mcli/instances/<name>/`:
+
+```text
+~/.mcli/instances/survival/
+├── instance.json          # MCLI metadata (name, era, version, source, path)
+└── minecraft/             # Active game directory passed to the Minecraft client
+    ├── saves/             # World saves
+    ├── mods/              # Mod JARs (Fabric, Forge, etc.)
+    ├── resourcepacks/     # Resource packs
+    ├── shaderpacks/       # Shader packs
+    └── screenshots/       # In-game screenshots
+```
+
+The `instance.json` at the instance root is the same record returned by `mcli instance info`. The `minecraft/` subdirectory is passed directly to the Minecraft client as its game directory.
+
+<Tip>
+Use instances to keep a modded profile completely separate from vanilla. Create one instance with `--fabric` or `--forge` flags for modded play, and a separate vanilla instance for testing or vanilla servers — they will never share saves or configs.
+</Tip>

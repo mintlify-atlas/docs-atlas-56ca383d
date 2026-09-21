@@ -1,0 +1,100 @@
+---
+title: "Install Fabric, Forge, Quilt, and NeoForge with MCLI"
+sidebarTitle: "Modloaders"
+description: "Install and launch Fabric, Quilt, Forge, and NeoForge modloaders alongside any Mojang-backed Minecraft version from the command line."
+---
+
+MCLI supports installing and launching with Fabric, Quilt, Forge, and NeoForge directly alongside any Mojang-backed Minecraft version. Modloader flags integrate with the standard era commands so you can go from zero to a modded session in a single command, or use the dedicated `mcli loader` subcommand to install a loader separately before launching.
+
+## Quick launch with modloader flags
+
+Pass one of the four loader flags directly to any era command. The flag downloads and applies the loader automatically before Minecraft starts.
+
+```bash
+mcli release 1.21.1 --fabric
+mcli release 1.21.1 --quilt
+mcli release 1.20.1 --forge
+mcli release 1.21.1 --neoforge
+```
+
+The four flags belong to a mutually exclusive group — only one loader can be specified per launch. Use `--loader-version` to pin an exact loader release instead of accepting the latest:
+
+```bash
+mcli release 1.21.1 --fabric --loader-version 0.16.0
+```
+
+## Standalone loader install
+
+Use `mcli loader` to install a modloader without immediately launching Minecraft. This is useful for pre-caching loaders or scripting environment setup.
+
+```bash
+mcli loader fabric 1.21.1
+mcli loader quilt 1.21.1
+mcli loader forge 1.20.1
+mcli loader neoforge 1.21.1
+mcli loader fabric 1.21.1 --loader-version 0.16.0
+```
+
+The first positional argument is the loader name and the second is the target Minecraft version. The optional `--loader-version` flag pins the loader release to install.
+
+## Per-loader details
+
+<CardGroup cols={2}>
+  <Card title="Fabric" icon="layer-group">
+    Loader metadata is fetched from `meta.fabricmc.net`. MCLI retrieves a launch
+    profile JSON (`/v2/versions/loader/<mc>/<version>/profile/json`) and merges
+    it into the base Minecraft metadata at launch time. No separate installer step
+    is required.
+  </Card>
+  <Card title="Quilt" icon="layer-group">
+    Loader metadata is fetched from `meta.quiltmc.org`. MCLI uses the v3 API
+    endpoint (`/v3/versions/loader/<mc>/<version>/profile/json`) and follows
+    the same profile-merge path as Fabric.
+  </Card>
+  <Card title="Forge" icon="hammer">
+    MCLI downloads the official Forge installer JAR from Maven
+    (`maven.minecraftforge.net`) and runs it with `--installClient` using a
+    managed Java runtime. The resulting launcher profile is then merged into
+    the base metadata for launch.
+  </Card>
+  <Card title="NeoForge" icon="hammer">
+    Installer JARs are downloaded from `maven.neoforged.net` and run with
+    `--installClient`. NeoForge versioning follows MC minor lines — for
+    example, `21.1.x` targets Minecraft `1.21.1`. MCLI automatically selects
+    the latest matching build unless `--loader-version` is specified.
+  </Card>
+</CardGroup>
+
+<Note>
+  Fabric and Quilt are installed as profile JSON files; no Java runtime is
+  invoked during their installation step. Forge and NeoForge install via a
+  real JAR installer and **do require Java** to be available — MCLI will
+  resolve a managed Java runtime automatically.
+</Note>
+
+## Launching a modded instance
+
+Create an instance for the target Minecraft version first, then launch it normally. The instance picks up whatever loader was installed for that version.
+
+```bash
+mcli instance create survival release 1.21.1
+mcli instance launch survival
+```
+
+Instances isolate saves, configs, mods, resource packs, and screenshots so different modded environments never interfere with each other. See the [Instances guide](/guides/instances) for the full workflow.
+
+## Caching and file locations
+
+<Note>
+  Loader files are cached under `~/.mcli/loaders/<loader>/<mc>/`. Fabric and
+  Quilt store a `version.json` profile there. Forge and NeoForge store the
+  downloaded installer JAR alongside the unpacked client directory so
+  reinstallation is skipped on subsequent launches.
+</Note>
+
+<Warning>
+  Modloaders only work with Mojang-sourced versions. Passing a loader flag
+  when launching an Omniarchive historical JAR will exit with an error.
+  Omniarchive builds use a legacy launch path that is incompatible with
+  modern loader metadata.
+</Warning>
