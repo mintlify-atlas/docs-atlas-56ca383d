@@ -15,7 +15,7 @@ MCLI groups all builds into eight eras that follow Minecraft's public developmen
 | `release` | Full, numbered release versions (1.0 and later). These are the stable builds Mojang ships to all players. |
 | `snapshot` | Weekly development snapshots published before a release. Named with a year-week pattern such as `24w40a`. |
 | `beta` | Java Edition Beta builds (Beta 1.0 – Beta 1.9.pre6, 2010–2011). Survival mechanics matured in this era. |
-| `alpha` | Java Edition Alpha builds (0.1.0 – 0.30, 2010). The first publicly distributed Minecraft versions. |
+| `alpha` | Java Edition Alpha builds (Alpha 1.0.0 – Alpha 1.2.6, 2010). The first widely distributed Minecraft versions. |
 | `infdev` | Infinite-terrain development builds (early 2010). Preceded Alpha; introduced the first procedurally generated worlds. |
 | `indev` | In-development internal prototypes (late 2009 – early 2010). Small contained levels; rarely distributed publicly. |
 | `classic` | Classic multiplayer and creative builds (2009). The era when Minecraft first gained public attention. |
@@ -107,6 +107,7 @@ Every build is represented as a `Version` dataclass defined in `mcli/model.py`. 
 | `url` | `str \| None` | URL of the version's metadata JSON (Mojang) or client JAR (Omniarchive). |
 | `release_time` | `str \| None` | ISO 8601 release timestamp when available from the source. |
 | `sha1` | `str \| None` | SHA-1 checksum of the version metadata, when provided by Mojang. |
+| `raw` | `dict` | The raw source record as returned by the manifest or crawler. |
 
 <Info>
 Omniarchive versions bypass MCLI's standard launcher pipeline. When a resolved `Version` has `source == "omniarchive"`, MCLI invokes the legacy launch path in `mcli/legacy.py` instead of the normal `mcli/launcher.py` flow. Modloaders (Fabric, Forge, NeoForge, Quilt) are not available for Omniarchive-backed builds.

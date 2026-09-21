@@ -1,5 +1,5 @@
 ---
-title: "Install Mods and Modpacks from Modrinth"
+title: "Search and Install Mods and Modpacks from Modrinth"
 sidebarTitle: "Mods & Modpacks"
 description: "Search, install, and manage mods and modpacks from the Modrinth API directly in MCLI, with automatic dependency resolution and .mrpack support."
 ---
@@ -86,9 +86,17 @@ Modrinth modpacks use the `.mrpack` format. MCLI handles downloading, unpacking 
 
 ```bash
 mcli modpack search "fabulously optimized"
+mcli modpack search "fabulously optimized" --minecraft 1.21.1 --loader fabric
+mcli modpack search "fabulously optimized" --limit 5
 ```
 
 Output columns match the mod search format: `project_id`, `title`, and `description`.
+
+| Flag | Description |
+|---|---|
+| `--minecraft` | Filter to versions compatible with this MC release |
+| `--loader` | Filter to a specific modloader (e.g. `fabric`, `forge`) |
+| `--limit` | Maximum number of results to return (default `10`) |
 
 ### Installing a modpack
 

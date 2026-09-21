@@ -1,10 +1,10 @@
 ---
-title: "mcli info — Show Minecraft Version Metadata"
-sidebarTitle: "info"
-description: "Retrieve and pretty-print full version metadata JSON for a specific Minecraft version ID, resolved from the Mojang manifest or Omniarchive catalog."
+title: "mcli info — Show Structured Minecraft Version Metadata"
+sidebarTitle: "Info"
+description: "Retrieve and pretty-print a structured metadata summary for a specific Minecraft version ID, resolved from Mojang or the Omniarchive catalog."
 ---
 
-The `mcli info` command resolves a version ID against the configured source(s) and prints its full metadata as pretty-printed JSON. For Mojang versions this includes the parsed version manifest — Java requirement, downloadable artifacts, library list, asset index, and more. For Omniarchive versions it returns the raw crawled entry with the direct client JAR download URL.
+The `mcli info` command resolves a version ID against the configured source(s) and prints a curated metadata summary as pretty-printed JSON. For Mojang versions this includes key fields extracted from the version manifest — Java requirement, download keys, library count, asset index, and more. For Omniarchive versions it returns a summary built from the crawled catalog entry, including the direct client JAR download URL.
 
 ## Synopsis
 

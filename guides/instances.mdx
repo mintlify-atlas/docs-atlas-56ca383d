@@ -1,5 +1,5 @@
 ---
-title: "Manage Isolated Minecraft Instances"
+title: "Create and Manage Isolated Minecraft Instances in MCLI"
 sidebarTitle: "Instances"
 description: "MCLI instances give each profile its own isolated game directory — keeping saves, mods, configs, resource packs, and screenshots completely separate."
 ---
@@ -121,16 +121,15 @@ Each instance lives under `~/.mcli/instances/<name>/`:
 ```text
 ~/.mcli/instances/survival/
 ├── instance.json          # MCLI metadata (name, era, version, source, path)
-└── minecraft/             # Active game directory passed to the Minecraft client
-    ├── saves/             # World saves
-    ├── mods/              # Mod JARs (Fabric, Forge, etc.)
-    ├── resourcepacks/     # Resource packs
-    ├── shaderpacks/       # Shader packs
-    └── screenshots/       # In-game screenshots
+├── minecraft/             # Active game directory passed to the Minecraft client
+├── mods/                  # Mod JARs (Fabric, Forge, etc.)
+├── resourcepacks/         # Resource packs
+├── shaderpacks/           # Shader packs
+└── screenshots/           # In-game screenshots
 ```
 
-The `instance.json` at the instance root is the same record returned by `mcli instance info`. The `minecraft/` subdirectory is passed directly to the Minecraft client as its game directory.
+The `instance.json` at the instance root is the same record returned by `mcli instance info`. The `minecraft/` subdirectory is passed directly to the Minecraft client as its game directory. MCLI creates `mods/`, `resourcepacks/`, `shaderpacks/`, and `screenshots/` at the instance root alongside `minecraft/`; Minecraft populates `minecraft/saves/` and other runtime directories when it first launches.
 
 <Tip>
-Use instances to keep a modded profile completely separate from vanilla. Create one instance with `--fabric` or `--forge` flags for modded play, and a separate vanilla instance for testing or vanilla servers — they will never share saves or configs.
+Use instances to keep a modded profile completely separate from vanilla. Create a dedicated instance for modded play and launch it with an era command such as `mcli release 1.21.1 --fabric`, then create a separate vanilla instance — they will never share saves or configs.
 </Tip>

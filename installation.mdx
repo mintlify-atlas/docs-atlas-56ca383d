@@ -8,37 +8,18 @@ MCLI can be installed in several ways depending on your platform and preferences
 
 <Tabs>
   <Tab title="Prebuilt Binary">
-    Standalone executables are attached to every GitHub Release and to every CI run under **Actions → Build MCLI binaries**. Download the archive for your platform, extract it, and run `mcli`.
+    Standalone executables are built on every push and on manual workflow runs under **Actions → Build MCLI binaries**. Download the archive for your platform, extract it, and run `mcli`.
 
-    **Primary targets**
+    **Available targets**
 
     | Platform | Artifact |
     |---|---|
     | Windows x64 | `mcli-windows-x64.zip` |
-    | Windows ARM64 | `mcli-windows-arm64.zip` |
+    | Windows x86 (32-bit) | `mcli-windows-x86.zip` |
     | Linux x64 | `mcli-linux-x64.tar.gz` |
-    | Linux ARM64 | `mcli-linux-arm64.tar.gz` |
+    | Linux x86 (32-bit) | `mcli-linux-x86.tar.gz` |
     | macOS Intel (x86\_64) | `mcli-macos-intel.tar.gz` |
     | macOS Apple Silicon (ARM64) | `mcli-macos-arm64.tar.gz` |
-
-    **Experimental targets**
-
-    The CI matrix also produces artifacts for a long-tail set of architectures. These prove the CLI can be packaged for each target but do not guarantee every Minecraft version will launch there (Minecraft/LWJGL native availability and Java runtime availability remain target-specific).
-
-    | Platform | Notes |
-    |---|---|
-    | Windows x86 (32-bit) | Experimental |
-    | Linux x86 (32-bit) | Experimental |
-    | Linux ARMv7 | Experimental |
-    | Linux RISC-V 64 (`riscv64`) | Experimental |
-    | Linux PowerPC 64 LE (`ppc64le`) | Experimental |
-    | Linux IBM Z (`s390x`) | Experimental |
-    | FreeBSD x86\_64 | Experimental — native VM build |
-    | FreeBSD ARM64 | Experimental — native VM build |
-    | OpenBSD x86\_64 | Experimental — native VM build |
-    | OpenBSD ARM64 | Experimental — native VM build |
-    | NetBSD x86\_64 | Experimental — native VM build |
-    | NetBSD ARM64 | Experimental — native VM build |
 
     **Extract and run (macOS / Linux)**
 

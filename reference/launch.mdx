@@ -1,5 +1,5 @@
 ---
-title: "mcli <era> — Launch a Minecraft Version"
+title: "mcli <era> — Launch a Minecraft Version by Era Type"
 sidebarTitle: "Launch"
 description: "Launch any Minecraft version by era with automatic file installation, Java selection, and optional modloader support via a single command."
 ---
@@ -10,13 +10,13 @@ The era subcommands — `release`, `snapshot`, `beta`, `alpha`, `infdev`, `indev
 
 ```text
 mcli release    <version> [--source <source>] [--fabric|--forge|--neoforge|--quilt] [--loader-version <v>]
-mcli snapshot   <version> [--source <source>]
-mcli beta       <version> [--source <source>]
-mcli alpha      <version> [--source <source>]
-mcli infdev     <version> [--source <source>]
-mcli indev      <version> [--source <source>]
-mcli classic    <version> [--source <source>]
-mcli preclassic <version> [--source <source>]
+mcli snapshot   <version> [--source <source>] [--fabric|--forge|--neoforge|--quilt] [--loader-version <v>]
+mcli beta       <version> [--source <source>] [--fabric|--forge|--neoforge|--quilt] [--loader-version <v>]
+mcli alpha      <version> [--source <source>] [--fabric|--forge|--neoforge|--quilt] [--loader-version <v>]
+mcli infdev     <version> [--source <source>] [--fabric|--forge|--neoforge|--quilt] [--loader-version <v>]
+mcli indev      <version> [--source <source>] [--fabric|--forge|--neoforge|--quilt] [--loader-version <v>]
+mcli classic    <version> [--source <source>] [--fabric|--forge|--neoforge|--quilt] [--loader-version <v>]
+mcli preclassic <version> [--source <source>] [--fabric|--forge|--neoforge|--quilt] [--loader-version <v>]
 ```
 
 ## Arguments and Flags
@@ -25,7 +25,7 @@ mcli preclassic <version> [--source <source>]
 |---|---|---|---|
 | `version` | positional, required | — | The version ID to launch, e.g. `1.21.1`, `b1.7.3`, `c0.30` |
 | `--source` | string | `auto` | Version source: `auto`, `mojang`, or `omniarchive` |
-| `--fabric` | flag | false | Launch with the Fabric modloader (`release` only, Mojang-sourced) |
+| `--fabric` | flag | false | Launch with the Fabric modloader (Mojang-sourced versions only) |
 | `--forge` | flag | false | Launch with the Forge modloader |
 | `--neoforge` | flag | false | Launch with the NeoForge modloader |
 | `--quilt` | flag | false | Launch with the Quilt modloader |

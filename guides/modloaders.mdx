@@ -86,10 +86,11 @@ Instances isolate saves, configs, mods, resource packs, and screenshots so diffe
 ## Caching and file locations
 
 <Note>
-  Loader files are cached under `~/.mcli/loaders/<loader>/<mc>/`. Fabric and
-  Quilt store a `version.json` profile there. Forge and NeoForge store the
-  downloaded installer JAR alongside the unpacked client directory so
-  reinstallation is skipped on subsequent launches.
+  Fabric and Quilt loader files are cached under
+  `~/.mcli/loaders/<loader>/<mc>/` as a `version.json` profile. Forge and
+  NeoForge cache their installer JAR and unpacked client directory under
+  `~/.mcli/loaders/<loader>/<mc>/<loader_version>/` — reinstallation is
+  skipped on subsequent launches when that directory is already present.
 </Note>
 
 <Warning>
